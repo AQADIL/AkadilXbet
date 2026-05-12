@@ -59,7 +59,6 @@ export default function VideoPlayer({
         v.currentTime >= c.resultTimestamp
       ) {
         hasTriggeredResult.current = true;
-        v.pause();
         onResultPointRef.current();
       }
     };

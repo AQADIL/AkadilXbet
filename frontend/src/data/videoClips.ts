@@ -4,8 +4,8 @@ export const VIDEO_CLIPS: VideoClip[] = [
   {
     id: "clip_001",
     videoUrl: "/videos/goal1.mp4",
-    decisionTimestamp: 4.5,
-    resultTimestamp: 9.0,
+    decisionTimestamp: 2.5,
+    resultTimestamp: 6.0,
     outcome: "GOAL",
     oddsGoal: 1.85,
     oddsNoGoal: 2.1,
@@ -31,8 +31,8 @@ export const VIDEO_CLIPS: VideoClip[] = [
   {
     id: "clip_004",
     videoUrl: "/videos/nogoal2.mp4",
-    decisionTimestamp: 6.1,
-    resultTimestamp: 11.0,
+    decisionTimestamp: 1.8,
+    resultTimestamp: 3.0,
     outcome: "NO_GOAL",
     oddsGoal: 1.6,
     oddsNoGoal: 2.5,
