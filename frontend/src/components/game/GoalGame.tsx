@@ -72,57 +72,49 @@ export default function GoalGame() {
   }, [clip.id]);
 
   return (
-    <div className="relative w-full">
-      <div className="relative">
-        <VideoPlayer
-          clip={clip}
-          phase={phase}
-          onDecisionPoint={handleDecisionPoint}
-          onEnded={handleVideoEnded}
-        />
+    <div className="relative w-full h-[calc(100svh-4rem)] bg-black overflow-hidden">
+      <VideoPlayer
+        clip={clip}
+        phase={phase}
+        onDecisionPoint={handleDecisionPoint}
+        onEnded={handleVideoEnded}
+      />
 
-        {phase === "DECISION" && (
-          <BettingOverlay
-            clip={clip}
-            visible
-            onBetPlaced={handleBetPlaced}
-            onTimeout={handleTimeout}
-          />
-        )}
-
-        {phase === "RESULT" && (
-          <ResultOverlay result={result} onNext={handleNextGame} />
-        )}
-      </div>
-
-      <div className="mt-3 px-1 flex items-center justify-between">
+      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 pt-4 pb-2"
+        style={{ background: "linear-gradient(to bottom, rgba(8,20,12,0.85) 0%, transparent 100%)" }}
+      >
         <div className="flex flex-col gap-0.5">
-          <span className="text-text-muted text-[10px] uppercase tracking-widest">
-            Current Clip
+          <span className="text-text-muted text-[10px] uppercase tracking-widest font-semibold">
+            24/7 Bets — Goal or No Goal
           </span>
-          <span className="text-text-secondary text-sm font-semibold">
+          <span className="text-text-secondary text-sm font-bold">
             {clip.label}
           </span>
         </div>
-        <div className="flex gap-4">
+        <div className="flex gap-3">
           <div className="flex flex-col items-end gap-0.5">
-            <span className="text-text-muted text-[10px] uppercase tracking-widest">
-              Goal Odds
-            </span>
-            <span className="text-brand-glow text-sm font-black tabular-nums">
-              x{clip.oddsGoal.toFixed(2)}
-            </span>
+            <span className="text-text-muted text-[9px] uppercase tracking-widest">Goal</span>
+            <span className="text-brand-glow text-sm font-black tabular-nums">x{clip.oddsGoal.toFixed(2)}</span>
           </div>
           <div className="flex flex-col items-end gap-0.5">
-            <span className="text-text-muted text-[10px] uppercase tracking-widest">
-              No Goal
-            </span>
-            <span className="text-text-secondary text-sm font-black tabular-nums">
-              x{clip.oddsNoGoal.toFixed(2)}
-            </span>
+            <span className="text-text-muted text-[9px] uppercase tracking-widest">No Goal</span>
+            <span className="text-text-secondary text-sm font-black tabular-nums">x{clip.oddsNoGoal.toFixed(2)}</span>
           </div>
         </div>
       </div>
+
+      {phase === "DECISION" && (
+        <BettingOverlay
+          clip={clip}
+          visible
+          onBetPlaced={handleBetPlaced}
+          onTimeout={handleTimeout}
+        />
+      )}
+
+      {phase === "RESULT" && (
+        <ResultOverlay result={result} onNext={handleNextGame} />
+      )}
     </div>
   );
 }

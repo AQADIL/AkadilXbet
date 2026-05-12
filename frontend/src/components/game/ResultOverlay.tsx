@@ -22,9 +22,9 @@ export default function ResultOverlay({ result, onNext }: ResultOverlayProps) {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -16 }}
         transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute inset-0 z-30 flex flex-col items-center justify-center p-6 rounded-xl"
+        className="absolute inset-0 z-30 flex flex-col items-center justify-center p-6"
       >
-        <div className="absolute inset-0 backdrop-blur-2xl bg-[#08140C]/80 rounded-xl" />
+        <div className="absolute inset-0 backdrop-blur-md bg-[#08140C]/75" />
 
         <div className="relative z-10 flex flex-col items-center gap-5 w-full max-w-xs">
           <motion.div
@@ -46,7 +46,7 @@ export default function ResultOverlay({ result, onNext }: ResultOverlayProps) {
 
           <div className="flex flex-col items-center gap-1 text-center">
             <p
-              className={`text-brutalist-xl text-[2.5rem] leading-none ${
+              className={`text-brutalist-xl text-[clamp(3rem,14vw,5rem)] leading-none ${
                 won ? "text-brand-glow glow-green" : "text-red-400"
               }`}
             >

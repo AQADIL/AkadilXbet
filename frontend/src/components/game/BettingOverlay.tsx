@@ -78,9 +78,9 @@ export default function BettingOverlay({
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.96 }}
           transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-          className="absolute inset-0 z-20 flex flex-col items-center justify-center p-4 rounded-xl overflow-hidden"
+          className="absolute inset-0 z-20 flex flex-col items-center justify-end p-4 pb-6 overflow-hidden"
         >
-          <div className="absolute inset-0 backdrop-blur-xl bg-[#08140C]/70 rounded-xl" />
+          <div className="absolute inset-0 backdrop-blur-sm bg-[#08140C]/50" />
 
           <div className="relative z-10 w-full max-w-sm flex flex-col gap-4">
             <div className="flex items-center justify-between">
@@ -126,11 +126,11 @@ export default function BettingOverlay({
               </div>
             </div>
 
-            <div className="glass rounded-xl p-4 text-center border border-white/10 shadow-2xl">
-              <p className="text-text-muted text-xs uppercase tracking-widest mb-1">
+            <div className="absolute top-1/2 left-0 right-0 -translate-y-[60%] flex flex-col items-center gap-2 pointer-events-none">
+              <p className="text-text-muted text-xs uppercase tracking-[0.3em] font-semibold">
                 Will it be a
               </p>
-              <p className="text-brutalist-xl text-[clamp(2rem,8vw,2.5rem)] text-text-primary leading-none">
+              <p className="text-brutalist-xl text-[clamp(3.5rem,18vw,6rem)] text-text-primary leading-none glow-green">
                 GOAL?
               </p>
             </div>

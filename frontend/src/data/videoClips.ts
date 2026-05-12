@@ -41,16 +41,6 @@ export const VIDEO_CLIPS: VideoClip[] = [
     oddsNoGoal: 2.5,
     label: "Header — Post",
   },
-  {
-    id: "clip_005",
-    videoUrl: "/videos/goal3.mp4",
-    thumbnailUrl: "/thumbnails/goal3.jpg",
-    decisionTimestamp: 4.0,
-    outcome: "GOAL",
-    oddsGoal: 1.75,
-    oddsNoGoal: 2.2,
-    label: "Long Range — Top Corner",
-  },
 ];
 
 export function getRandomClip(excludeId?: string): VideoClip {

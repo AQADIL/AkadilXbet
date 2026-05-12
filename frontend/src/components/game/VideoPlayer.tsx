@@ -57,16 +57,14 @@ export default function VideoPlayer({
   }, [phase]);
 
   return (
-    <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden">
-      <video
-        ref={videoRef}
-        src={clip.videoUrl}
-        className="w-full h-full object-cover"
-        playsInline
-        preload="auto"
-        disablePictureInPicture
-        onContextMenu={(e) => e.preventDefault()}
-      />
-    </div>
+    <video
+      ref={videoRef}
+      src={clip.videoUrl}
+      className="absolute inset-0 w-full h-full object-cover"
+      playsInline
+      preload="auto"
+      disablePictureInPicture
+      onContextMenu={(e) => e.preventDefault()}
+    />
   );
 }
