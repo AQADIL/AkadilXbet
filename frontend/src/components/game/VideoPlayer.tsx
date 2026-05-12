@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect } from "react";
 import type { VideoClip, GamePhase } from "@/types/game";
 
 interface VideoPlayerProps {
@@ -22,35 +22,16 @@ export default function VideoPlayer({
   const hasTriggeredDecision = useRef(false);
   const hasTriggeredResult = useRef(false);
   const phaseRef = useRef<GamePhase>(phase);
+  const clipRef = useRef(clip);
+  const onDecisionPointRef = useRef(onDecisionPoint);
+  const onResultPointRef = useRef(onResultPoint);
+  const onEndedRef = useRef(onEnded);
 
-  useEffect(() => {
-    phaseRef.current = phase;
-  }, [phase]);
-
-  const handleTimeUpdate = useCallback(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    if (
-      !hasTriggeredDecision.current &&
-      video.currentTime >= clip.decisionTimestamp
-    ) {
-      hasTriggeredDecision.current = true;
-      video.pause();
-      onDecisionPoint();
-      return;
-    }
-
-    if (
-      !hasTriggeredResult.current &&
-      phaseRef.current === "REVEALING" &&
-      video.currentTime >= clip.resultTimestamp
-    ) {
-      hasTriggeredResult.current = true;
-      video.pause();
-      onResultPoint();
-    }
-  }, [clip.decisionTimestamp, clip.resultTimestamp, onDecisionPoint, onResultPoint]);
+  useEffect(() => { phaseRef.current = phase; }, [phase]);
+  useEffect(() => { clipRef.current = clip; }, [clip]);
+  useEffect(() => { onDecisionPointRef.current = onDecisionPoint; }, [onDecisionPoint]);
+  useEffect(() => { onResultPointRef.current = onResultPoint; }, [onResultPoint]);
+  useEffect(() => { onEndedRef.current = onEnded; }, [onEnded]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -60,19 +41,42 @@ export default function VideoPlayer({
     hasTriggeredResult.current = false;
     video.load();
 
-    const onEnded_ = () => {
-      if (phaseRef.current === "REVEALING") onResultPoint();
-      else onEnded();
+    const handleTimeUpdate = () => {
+      const v = videoRef.current;
+      if (!v) return;
+      const c = clipRef.current;
+
+      if (!hasTriggeredDecision.current && v.currentTime >= c.decisionTimestamp) {
+        hasTriggeredDecision.current = true;
+        v.pause();
+        onDecisionPointRef.current();
+        return;
+      }
+
+      if (
+        !hasTriggeredResult.current &&
+        phaseRef.current === "REVEALING" &&
+        v.currentTime >= c.resultTimestamp
+      ) {
+        hasTriggeredResult.current = true;
+        v.pause();
+        onResultPointRef.current();
+      }
+    };
+
+    const handleEnded = () => {
+      if (phaseRef.current === "REVEALING") onResultPointRef.current();
+      else onEndedRef.current();
     };
 
     video.addEventListener("timeupdate", handleTimeUpdate);
-    video.addEventListener("ended", onEnded_);
+    video.addEventListener("ended", handleEnded);
 
     return () => {
       video.removeEventListener("timeupdate", handleTimeUpdate);
-      video.removeEventListener("ended", onEnded_);
+      video.removeEventListener("ended", handleEnded);
     };
-  }, [clip.videoUrl, handleTimeUpdate, onResultPoint, onEnded]);
+  }, [clip.videoUrl]);
 
   useEffect(() => {
     const video = videoRef.current;

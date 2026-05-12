@@ -39,7 +39,7 @@ export default function ResultOverlay({ result, timedOut, onNext }: ResultOverla
         transition={{ duration: 0.3 }}
         className="absolute inset-0 z-30 flex flex-col items-center justify-between overflow-hidden"
       >
-        <div className="absolute inset-0 bg-black/45 backdrop-blur-[4px]" />
+        <div className="absolute inset-0 bg-black/30" />
 
         <div className="relative z-10 w-full" />
 
@@ -84,13 +84,13 @@ export default function ResultOverlay({ result, timedOut, onNext }: ResultOverla
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          className="relative z-10 w-full px-4 pb-6 md:pb-10 md:max-w-sm md:mx-auto"
+          className="relative z-10 w-full px-4 pb-6"
         >
           <motion.button
             whileTap={{ scale: 0.97 }}
             whileHover={{ scale: 1.01 }}
             onClick={onNext}
-            className="flex items-center justify-center gap-2 w-full h-16 md:h-18 rounded-2xl font-black text-brutalist tracking-widest uppercase text-base
+            className="flex items-center justify-center gap-2 w-full h-16 rounded-2xl font-black tracking-widest uppercase text-base
               bg-white/10 border border-white/20 text-white
               hover:bg-white/15 hover:border-white/30
               backdrop-blur-md transition-all duration-150 shadow-xl"

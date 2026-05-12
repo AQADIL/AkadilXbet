@@ -63,10 +63,10 @@ export default function BettingOverlay({
           transition={{ duration: 0.2 }}
           className="absolute inset-0 z-20 flex flex-col items-center justify-between overflow-hidden"
         >
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-[3px]" />
+          <div className="absolute inset-0 bg-black/20" />
 
-          <div className="relative z-10 flex justify-end w-full px-4 pt-5 md:pt-8">
-            <div className="relative flex items-center justify-center w-14 h-14 md:w-16 md:h-16">
+          <div className="relative z-10 flex justify-end w-full px-4 pt-5">
+            <div className="relative flex items-center justify-center w-14 h-14">
               <svg
                 className="absolute inset-0 w-full h-full -rotate-90"
                 viewBox="0 0 60 60"
@@ -113,12 +113,12 @@ export default function BettingOverlay({
             </motion.p>
           </div>
 
-          <div className="relative z-10 w-full px-4 pb-6 md:pb-10 flex flex-col gap-3 md:flex-row md:gap-4 md:max-w-xl md:mx-auto">
+          <div className="relative z-10 w-full px-4 pb-6 flex flex-col gap-3">
             <motion.button
               whileTap={{ scale: 0.97 }}
               whileHover={{ scale: 1.01 }}
               onClick={() => handleBet("GOAL")}
-              className="flex-1 h-16 md:h-20 rounded-2xl font-black text-brutalist tracking-widest uppercase text-base md:text-lg transition-all duration-150
+              className="h-16 w-full rounded-2xl font-black tracking-widest uppercase text-base transition-all duration-150
                 bg-green-500/20 border border-green-400/40 text-green-300
                 hover:bg-green-500/30 hover:border-green-400/60
                 active:bg-green-500/40
@@ -131,7 +131,7 @@ export default function BettingOverlay({
               whileTap={{ scale: 0.97 }}
               whileHover={{ scale: 1.01 }}
               onClick={() => handleBet("NO_GOAL")}
-              className="flex-1 h-16 md:h-20 rounded-2xl font-black text-brutalist tracking-widest uppercase text-base md:text-lg transition-all duration-150
+              className="h-16 w-full rounded-2xl font-black tracking-widest uppercase text-base transition-all duration-150
                 bg-red-500/20 border border-red-400/40 text-red-300
                 hover:bg-red-500/30 hover:border-red-400/60
                 active:bg-red-500/40

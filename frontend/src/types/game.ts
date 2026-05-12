@@ -10,13 +10,11 @@ export type GamePhase =
 export interface VideoClip {
   id: string;
   videoUrl: string;
-  thumbnailUrl: string;
   decisionTimestamp: number;
   resultTimestamp: number;
   outcome: GameOutcome;
   oddsGoal: number;
   oddsNoGoal: number;
-  label: string;
 }
 
 export interface PlacedBet {
