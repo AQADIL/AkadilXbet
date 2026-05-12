@@ -2,35 +2,27 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Target, XCircle, Coins } from "lucide-react";
-import type { BetChoice, VideoClip } from "@/types/game";
+import type { BetChoice } from "@/types/game";
 
 const COUNTDOWN_SECONDS = 15;
-const QUICK_AMOUNTS = [50, 100, 250, 500];
 
 interface BettingOverlayProps {
-  clip: VideoClip;
   visible: boolean;
-  onBetPlaced: (choice: BetChoice, amount: number) => void;
+  onBetPlaced: (choice: BetChoice) => void;
   onTimeout: () => void;
 }
 
 export default function BettingOverlay({
-  clip,
   visible,
   onBetPlaced,
   onTimeout,
 }: BettingOverlayProps) {
   const [timeLeft, setTimeLeft] = useState(COUNTDOWN_SECONDS);
-  const [amount, setAmount] = useState(100);
-  const [inputValue, setInputValue] = useState("100");
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (!visible) {
       setTimeLeft(COUNTDOWN_SECONDS);
-      setAmount(100);
-      setInputValue("100");
       if (intervalRef.current) clearInterval(intervalRef.current);
       return;
     }
@@ -52,150 +44,101 @@ export default function BettingOverlay({
     };
   }, [visible, onTimeout]);
 
-  const progress = timeLeft / COUNTDOWN_SECONDS;
-  const circumference = 2 * Math.PI * 28;
-  const strokeDashoffset = circumference * (1 - progress);
-
-  const handleAmountInput = (val: string) => {
-    setInputValue(val);
-    const parsed = parseInt(val, 10);
-    if (!isNaN(parsed) && parsed > 0) setAmount(parsed);
-  };
+  const circumference = 2 * Math.PI * 26;
+  const strokeDashoffset = circumference * (1 - timeLeft / COUNTDOWN_SECONDS);
+  const isUrgent = timeLeft <= 5;
 
   const handleBet = (choice: BetChoice) => {
     if (intervalRef.current) clearInterval(intervalRef.current);
-    onBetPlaced(choice, amount);
+    onBetPlaced(choice);
   };
-
-  const odds = (choice: BetChoice) =>
-    choice === "GOAL" ? clip.oddsGoal : clip.oddsNoGoal;
 
   return (
     <AnimatePresence>
       {visible && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.96 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.96 }}
-          transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-          className="absolute inset-0 z-20 flex flex-col items-center justify-end p-4 pb-6 overflow-hidden"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="absolute inset-0 z-20 flex flex-col items-center justify-between overflow-hidden"
         >
-          <div className="absolute inset-0 backdrop-blur-sm bg-[#08140C]/50" />
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-[3px]" />
 
-          <div className="relative z-10 w-full max-w-sm flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col gap-0.5">
-                <span className="text-[10px] uppercase tracking-widest text-text-muted font-semibold">
-                  24/7 Bets
-                </span>
-                <span className="text-text-secondary text-sm font-semibold">
-                  {clip.label}
-                </span>
-              </div>
-
-              <div className="relative flex items-center justify-center w-16 h-16">
-                <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 64 64">
-                  <circle
-                    cx="32"
-                    cy="32"
-                    r="28"
-                    fill="none"
-                    stroke="rgba(74,222,128,0.15)"
-                    strokeWidth="4"
-                  />
-                  <motion.circle
-                    cx="32"
-                    cy="32"
-                    r="28"
-                    fill="none"
-                    stroke={timeLeft <= 5 ? "#ef4444" : "#4ade80"}
-                    strokeWidth="4"
-                    strokeLinecap="round"
-                    strokeDasharray={circumference}
-                    strokeDashoffset={strokeDashoffset}
-                    transition={{ duration: 0.9, ease: "linear" }}
-                  />
-                </svg>
-                <span
-                  className={`text-xl font-black tabular-nums ${
-                    timeLeft <= 5 ? "text-red-400" : "text-brand-glow"
-                  }`}
-                >
-                  {timeLeft}
-                </span>
-              </div>
-            </div>
-
-            <div className="absolute top-1/2 left-0 right-0 -translate-y-[60%] flex flex-col items-center gap-2 pointer-events-none">
-              <p className="text-text-muted text-xs uppercase tracking-[0.3em] font-semibold">
-                Will it be a
-              </p>
-              <p className="text-brutalist-xl text-[clamp(3.5rem,18vw,6rem)] text-text-primary leading-none glow-green">
-                GOAL?
-              </p>
-            </div>
-
-            <div className="glass rounded-xl p-3 flex flex-col gap-2 border border-white/10">
-              <div className="flex items-center gap-2">
-                <Coins size={14} className="text-text-gold shrink-0" />
-                <span className="text-xs text-text-muted uppercase tracking-widest">
-                  Bet Amount
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min={10}
-                  value={inputValue}
-                  onChange={(e) => handleAmountInput(e.target.value)}
-                  className="flex-1 bg-surface-raised border border-border-subtle rounded-lg px-3 h-10 text-text-primary text-sm font-bold focus:outline-none focus:border-brand-primary"
+          <div className="relative z-10 flex justify-end w-full px-4 pt-5 md:pt-8">
+            <div className="relative flex items-center justify-center w-14 h-14 md:w-16 md:h-16">
+              <svg
+                className="absolute inset-0 w-full h-full -rotate-90"
+                viewBox="0 0 60 60"
+              >
+                <circle
+                  cx="30" cy="30" r="26"
+                  fill="none"
+                  stroke="rgba(255,255,255,0.1)"
+                  strokeWidth="3"
                 />
-                <div className="flex gap-1">
-                  {QUICK_AMOUNTS.map((q) => (
-                    <button
-                      key={q}
-                      onClick={() => {
-                        setAmount(q);
-                        setInputValue(String(q));
-                      }}
-                      className={`h-10 px-2 rounded-lg text-xs font-bold transition-all duration-150 ${
-                        amount === q
-                          ? "bg-brand-primary text-surface-base"
-                          : "bg-surface-raised text-text-muted hover:text-text-secondary"
-                      }`}
-                    >
-                      {q}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <motion.button
-                whileTap={{ scale: 0.96 }}
-                onClick={() => handleBet("GOAL")}
-                className="flex flex-col items-center justify-center gap-1 h-16 rounded-xl bg-brand-primary text-surface-base font-black text-brutalist text-sm tracking-widest uppercase shadow-lg shadow-brand-primary/30 active:bg-brand-glow transition-colors duration-150"
+                <motion.circle
+                  cx="30" cy="30" r="26"
+                  fill="none"
+                  stroke={isUrgent ? "#f87171" : "#4ade80"}
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={strokeDashoffset}
+                  transition={{ duration: 0.85, ease: "linear" }}
+                />
+              </svg>
+              <span
+                className={`text-lg font-black tabular-nums leading-none ${
+                  isUrgent ? "text-red-400" : "text-white"
+                }`}
               >
-                <Target size={18} strokeWidth={2.5} />
-                <span>Goal</span>
-                <span className="text-[10px] font-semibold opacity-75">
-                  x{odds("GOAL").toFixed(2)}
-                </span>
-              </motion.button>
-
-              <motion.button
-                whileTap={{ scale: 0.96 }}
-                onClick={() => handleBet("NO_GOAL")}
-                className="flex flex-col items-center justify-center gap-1 h-16 rounded-xl glass border border-white/10 text-text-primary font-black text-brutalist text-sm tracking-widest uppercase transition-colors duration-150 hover:border-red-500/40 active:bg-red-950/30"
-              >
-                <XCircle size={18} strokeWidth={2.5} />
-                <span>No Goal</span>
-                <span className="text-[10px] font-semibold opacity-75">
-                  x{odds("NO_GOAL").toFixed(2)}
-                </span>
-              </motion.button>
+                {timeLeft}
+              </span>
             </div>
+          </div>
+
+          <div className="relative z-10 flex flex-col items-center gap-3 px-4 select-none pointer-events-none">
+            <p className="text-white/50 text-[11px] md:text-xs uppercase tracking-[0.35em] font-semibold">
+              Will it be a
+            </p>
+            <motion.p
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.05, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              className="text-white font-black uppercase leading-none text-[clamp(4rem,20vw,7rem)] tracking-tight drop-shadow-2xl"
+              style={{ textShadow: "0 0 60px rgba(74,222,128,0.5), 0 0 120px rgba(74,222,128,0.2)" }}
+            >
+              GOAL?
+            </motion.p>
+          </div>
+
+          <div className="relative z-10 w-full px-4 pb-6 md:pb-10 flex flex-col gap-3 md:flex-row md:gap-4 md:max-w-xl md:mx-auto">
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              whileHover={{ scale: 1.01 }}
+              onClick={() => handleBet("GOAL")}
+              className="flex-1 h-16 md:h-20 rounded-2xl font-black text-brutalist tracking-widest uppercase text-base md:text-lg transition-all duration-150
+                bg-green-500/20 border border-green-400/40 text-green-300
+                hover:bg-green-500/30 hover:border-green-400/60
+                active:bg-green-500/40
+                backdrop-blur-md shadow-lg shadow-green-900/30"
+            >
+              GOAL
+            </motion.button>
+
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              whileHover={{ scale: 1.01 }}
+              onClick={() => handleBet("NO_GOAL")}
+              className="flex-1 h-16 md:h-20 rounded-2xl font-black text-brutalist tracking-widest uppercase text-base md:text-lg transition-all duration-150
+                bg-red-500/20 border border-red-400/40 text-red-300
+                hover:bg-red-500/30 hover:border-red-400/60
+                active:bg-red-500/40
+                backdrop-blur-md shadow-lg shadow-red-900/30"
+            >
+              NO GOAL
+            </motion.button>
           </div>
         </motion.div>
       )}

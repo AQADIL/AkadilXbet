@@ -12,6 +12,7 @@ export interface VideoClip {
   videoUrl: string;
   thumbnailUrl: string;
   decisionTimestamp: number;
+  resultTimestamp: number;
   outcome: GameOutcome;
   oddsGoal: number;
   oddsNoGoal: number;

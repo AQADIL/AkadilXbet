@@ -6,13 +6,13 @@ import BettingOverlay from "@/components/game/BettingOverlay";
 import ResultOverlay from "@/components/game/ResultOverlay";
 import { useGameSession } from "@/hooks/useGameSession";
 import { getRandomClip } from "@/data/videoClips";
-import type { BetChoice, GamePhase, PlacedBet, RoundResult, VideoClip } from "@/types/game";
+import type { BetChoice, GamePhase, RoundResult, VideoClip } from "@/types/game";
 
 export default function GoalGame() {
   const [clip, setClip] = useState<VideoClip>(() => getRandomClip());
   const [phase, setPhase] = useState<GamePhase>("PLAYING");
-  const [activeBet, setActiveBet] = useState<PlacedBet | null>(null);
   const [result, setResult] = useState<RoundResult | null>(null);
+  const [timedOut, setTimedOut] = useState(false);
 
   const { logResult } = useGameSession();
 
@@ -21,51 +21,40 @@ export default function GoalGame() {
   }, []);
 
   const handleBetPlaced = useCallback(
-    (choice: BetChoice, amount: number) => {
-      const bet: PlacedBet = {
-        clipId: clip.id,
-        choice,
-        amount,
-        placedAt: Date.now(),
+    (choice: BetChoice) => {
+      const won = choice === clip.outcome;
+      const oddsForChoice = choice === "GOAL" ? clip.oddsGoal : clip.oddsNoGoal;
+      const roundResult: RoundResult = {
+        bet: { clipId: clip.id, choice, amount: 0, placedAt: Date.now() },
+        outcome: clip.outcome,
+        won,
+        payout: won ? Math.floor(100 * oddsForChoice) : 0,
       };
-      setActiveBet(bet);
+      setResult(roundResult);
+      setTimedOut(false);
       setPhase("REVEALING");
     },
-    [clip.id]
+    [clip]
   );
 
   const handleTimeout = useCallback(() => {
-    setActiveBet(null);
+    setResult(null);
+    setTimedOut(true);
     setPhase("REVEALING");
   }, []);
 
-  const handleVideoEnded = useCallback(async () => {
-    if (!activeBet) {
-      setPhase("RESULT");
-      setResult(null);
-      return;
-    }
-
-    const won = activeBet.choice === clip.outcome;
-    const oddsForChoice =
-      activeBet.choice === "GOAL" ? clip.oddsGoal : clip.oddsNoGoal;
-    const payout = won ? Math.floor(activeBet.amount * oddsForChoice) : 0;
-
-    const roundResult: RoundResult = {
-      bet: activeBet,
-      outcome: clip.outcome,
-      won,
-      payout,
-    };
-
-    setResult(roundResult);
+  const handleResultPoint = useCallback(async () => {
     setPhase("RESULT");
-    await logResult(roundResult);
-  }, [activeBet, clip, logResult]);
+    if (result) await logResult(result);
+  }, [result, logResult]);
+
+  const handleVideoEnded = useCallback(() => {
+    if (phase === "REVEALING") handleResultPoint();
+  }, [phase, handleResultPoint]);
 
   const handleNextGame = useCallback(() => {
-    setActiveBet(null);
     setResult(null);
+    setTimedOut(false);
     const next = getRandomClip(clip.id);
     setClip(next);
     setPhase("PLAYING");
@@ -77,35 +66,29 @@ export default function GoalGame() {
         clip={clip}
         phase={phase}
         onDecisionPoint={handleDecisionPoint}
+        onResultPoint={handleResultPoint}
         onEnded={handleVideoEnded}
       />
 
-      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 pt-4 pb-2"
-        style={{ background: "linear-gradient(to bottom, rgba(8,20,12,0.85) 0%, transparent 100%)" }}
+      <div
+        className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 pt-safe-top pt-4 pb-6 pointer-events-none"
+        style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%)" }}
       >
-        <div className="flex flex-col gap-0.5">
-          <span className="text-text-muted text-[10px] uppercase tracking-widest font-semibold">
-            24/7 Bets — Goal or No Goal
-          </span>
-          <span className="text-text-secondary text-sm font-bold">
-            {clip.label}
-          </span>
-        </div>
+        <span className="text-white/40 text-[10px] uppercase tracking-[0.3em] font-semibold">
+          24/7 · Goal or No Goal
+        </span>
         <div className="flex gap-3">
-          <div className="flex flex-col items-end gap-0.5">
-            <span className="text-text-muted text-[9px] uppercase tracking-widest">Goal</span>
-            <span className="text-brand-glow text-sm font-black tabular-nums">x{clip.oddsGoal.toFixed(2)}</span>
-          </div>
-          <div className="flex flex-col items-end gap-0.5">
-            <span className="text-text-muted text-[9px] uppercase tracking-widest">No Goal</span>
-            <span className="text-text-secondary text-sm font-black tabular-nums">x{clip.oddsNoGoal.toFixed(2)}</span>
-          </div>
+          <span className="text-white/40 text-[10px] uppercase tracking-widest">
+            Goal <span className="text-green-400/70 font-bold">x{clip.oddsGoal.toFixed(2)}</span>
+          </span>
+          <span className="text-white/40 text-[10px] uppercase tracking-widest">
+            No Goal <span className="text-white/60 font-bold">x{clip.oddsNoGoal.toFixed(2)}</span>
+          </span>
         </div>
       </div>
 
       {phase === "DECISION" && (
         <BettingOverlay
-          clip={clip}
           visible
           onBetPlaced={handleBetPlaced}
           onTimeout={handleTimeout}
@@ -113,7 +96,11 @@ export default function GoalGame() {
       )}
 
       {phase === "RESULT" && (
-        <ResultOverlay result={result} onNext={handleNextGame} />
+        <ResultOverlay
+          result={result}
+          timedOut={timedOut}
+          onNext={handleNextGame}
+        />
       )}
     </div>
   );

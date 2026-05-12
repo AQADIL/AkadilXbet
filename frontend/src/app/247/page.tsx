@@ -3,7 +3,7 @@ import GoalGame from "@/components/game/GoalGame";
 
 export default function BetsPage() {
   return (
-    <MobileShell flush>
+    <MobileShell flush wide>
       <GoalGame />
     </MobileShell>
   );
