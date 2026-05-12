@@ -1,0 +1,8 @@
+{
+  "rules": {
+    "rounds": {
+      ".read": false,
+      ".write": true
+    }
+  }
+}
