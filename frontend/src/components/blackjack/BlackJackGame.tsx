@@ -23,58 +23,36 @@ export default function BlackJackGame() {
   const [introClip] = useState<IntroClip>(() => getRandomIntroClip());
   const [unlockedLevel, setUnlockedLevel] = useState(1);
   const [selectedLevel, setSelectedLevel] = useState(1);
+  const [previousLevel, setPreviousLevel] = useState(1);
   const [clip, setClip] = useState<BlackJackClip>(() => getBlackJackClipByLevel(1));
   const [decisionIndex, setDecisionIndex] = useState(0);
   const [decision, setDecision] = useState<BlackJackDecision | null>(null);
   const [outcome, setOutcome] = useState<BlackJackOutcome | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
-  const clipRef = useRef(clip);
-  const phaseRef = useRef<GamePhase>(phase);
-  const decisionIndexRef = useRef(decisionIndex);
-
-  useEffect(() => { clipRef.current = clip; }, [clip]);
-  useEffect(() => { phaseRef.current = phase; }, [phase]);
-  useEffect(() => { decisionIndexRef.current = decisionIndex; }, [decisionIndex]);
 
   const handleIntroComplete = useCallback(() => {
     setPhase("LEVELS");
   }, []);
 
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+  const handleTimeUpdate = useCallback(() => {
+    const v = videoRef.current;
+    if (!v || phase !== "PLAYING") return;
 
-    video.load();
+    const timestamps = clip.decisionTimestamps;
+    if (decisionIndex >= timestamps.length) return;
 
-    const handleTimeUpdate = () => {
-      const v = videoRef.current;
-      if (!v || phaseRef.current !== "PLAYING") return;
+    if (v.currentTime >= timestamps[decisionIndex]) {
+      v.pause();
+      setPhase("DECISION");
+    }
+  }, [phase, clip.decisionTimestamps, decisionIndex]);
 
-      const timestamps = clipRef.current.decisionTimestamps;
-      const idx = decisionIndexRef.current;
-      if (idx >= timestamps.length) return;
-
-      if (v.currentTime >= timestamps[idx]) {
-        v.pause();
-        setPhase("DECISION");
-      }
-    };
-
-    const handleEnded = () => {
-      if (phaseRef.current !== "RESULT") {
-        setPhase("RESULT");
-      }
-    };
-
-    video.addEventListener("timeupdate", handleTimeUpdate);
-    video.addEventListener("ended", handleEnded);
-
-    return () => {
-      video.removeEventListener("timeupdate", handleTimeUpdate);
-      video.removeEventListener("ended", handleEnded);
-    };
-  }, [clip.videoUrl]);
+  const handleEnded = useCallback(() => {
+    if (phase !== "RESULT") {
+      setPhase("RESULT");
+    }
+  }, [phase]);
 
   useEffect(() => {
     if (phase !== "PLAYING") return;
@@ -100,11 +78,7 @@ export default function BlackJackGame() {
     (picked: BlackJackDecision) => {
       setDecision(picked);
 
-      setDecisionIndex((prev) => {
-        const next = prev + 1;
-        decisionIndexRef.current = next;
-        return next;
-      });
+      setDecisionIndex((prev) => prev + 1);
 
       setPhase("PLAYING");
       videoRef.current?.play().catch(() => {});
@@ -113,6 +87,7 @@ export default function BlackJackGame() {
   );
 
   const handleNext = useCallback(() => {
+    setPreviousLevel(selectedLevel);
     if (outcome === "WIN" && selectedLevel === unlockedLevel && unlockedLevel < 5) {
       setUnlockedLevel((prev) => Math.min(5, prev + 1));
       setSelectedLevel((prev) => Math.min(5, prev + 1));
@@ -149,7 +124,11 @@ export default function BlackJackGame() {
               <LevelMap
                 unlockedLevel={unlockedLevel}
                 selectedLevel={selectedLevel}
-                onSelect={setSelectedLevel}
+                previousLevel={previousLevel}
+                onSelect={(lvl: number) => {
+                  setPreviousLevel(selectedLevel);
+                  setSelectedLevel(lvl);
+                }}
                 onStart={handleStartLevel}
               />
             </div>
@@ -173,6 +152,8 @@ export default function BlackJackGame() {
             preload="auto"
             disablePictureInPicture
             onContextMenu={(e) => e.preventDefault()}
+            onTimeUpdate={handleTimeUpdate}
+            onEnded={handleEnded}
           />
 
           <div

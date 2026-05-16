@@ -6,6 +6,7 @@ import { Crown, Lock, Play, Sparkles } from "lucide-react";
 interface LevelMapProps {
   unlockedLevel: number;
   selectedLevel: number;
+  previousLevel: number;
   onSelect: (level: number) => void;
   onStart: (level: number) => void;
 }
@@ -18,8 +19,9 @@ const LEVELS = [
   { level: 5, x: 72, y: 16, label: "B" },
 ];
 
-export default function LevelMap({ unlockedLevel, selectedLevel, onSelect, onStart }: LevelMapProps) {
+export default function LevelMap({ unlockedLevel, selectedLevel, previousLevel, onSelect, onStart }: LevelMapProps) {
   const selected = LEVELS.find((item) => item.level === selectedLevel) ?? LEVELS[0];
+  const prev = LEVELS.find((item) => item.level === previousLevel) ?? LEVELS[0];
 
   return (
     <div className="relative h-full w-full overflow-hidden rounded-[2rem] border border-white/10 bg-[#08140C] shadow-2xl">
@@ -57,6 +59,7 @@ export default function LevelMap({ unlockedLevel, selectedLevel, onSelect, onSta
 
       <motion.div
         className="absolute z-20 -translate-x-1/2 -translate-y-[120%]"
+        initial={{ left: `${prev.x}%`, top: `${prev.y}%` }}
         animate={{ left: `${selected.x}%`, top: `${selected.y}%`, y: [0, -12, 0] }}
         transition={{
           left: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
