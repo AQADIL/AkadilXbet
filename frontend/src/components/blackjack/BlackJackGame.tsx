@@ -41,16 +41,14 @@ export default function BlackJackGame() {
   }, []);
 
   useEffect(() => {
-    if (phase !== "PLAYING") return;
     const video = videoRef.current;
     if (!video) return;
 
     video.load();
-    video.play().catch(() => {});
 
     const handleTimeUpdate = () => {
       const v = videoRef.current;
-      if (!v) return;
+      if (!v || phaseRef.current !== "PLAYING") return;
 
       const timestamps = clipRef.current.decisionTimestamps;
       const idx = decisionIndexRef.current;
@@ -75,7 +73,12 @@ export default function BlackJackGame() {
       video.removeEventListener("timeupdate", handleTimeUpdate);
       video.removeEventListener("ended", handleEnded);
     };
-  }, [phase, clip.videoUrl]);
+  }, [clip.videoUrl]);
+
+  useEffect(() => {
+    if (phase !== "PLAYING") return;
+    videoRef.current?.play().catch(() => {});
+  }, [phase]);
 
   const handleStartLevel = useCallback(() => {
     const levelClip = getBlackJackClipByLevel(selectedLevel);
@@ -129,45 +132,38 @@ export default function BlackJackGame() {
         {phase === "LEVELS" && (
           <motion.div
             key="levels"
-            className="absolute inset-0 z-20 px-4 py-6 flex flex-col justify-between bg-[#08140C]"
+            className="absolute inset-0 z-20 flex flex-col bg-[#08140C]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="flex flex-col gap-2">
-              <span className="text-white/40 text-[10px] uppercase tracking-[0.35em] font-semibold">
-                BlackJack Campaign
-              </span>
-              <h2 className="text-white font-black uppercase text-[clamp(2rem,10vw,3rem)] leading-none tracking-tight">
-                Choose Level
-              </h2>
-            </div>
-
-            <div className="flex flex-col gap-4">
+            <div className="relative flex-1 min-h-0 p-3">
               <LevelMap
                 unlockedLevel={unlockedLevel}
                 selectedLevel={selectedLevel}
                 onSelect={setSelectedLevel}
               />
+            </div>
 
-              <div className="rounded-2xl border border-white/15 bg-[#112A18]/50 backdrop-blur-xl px-4 py-3">
-                <p className="text-white/45 text-[10px] uppercase tracking-[0.3em] font-semibold mb-2">
+            <div className="relative z-30 px-4 pb-4 flex flex-col gap-3">
+              <div className="rounded-2xl border border-white/15 bg-[#112A18]/70 backdrop-blur-xl px-4 py-3 shadow-xl">
+                <p className="text-white/45 text-[10px] uppercase tracking-[0.3em] font-semibold mb-1">
                   Current Story
                 </p>
                 <p className="text-white text-lg font-black uppercase tracking-wide">
                   {getBlackJackClipByLevel(selectedLevel).title}
                 </p>
               </div>
-            </div>
 
-            <button
-              type="button"
-              onClick={handleStartLevel}
-              className="h-16 w-full rounded-2xl bg-green-500/20 border border-green-400/45 text-green-200 font-black uppercase tracking-widest text-base backdrop-blur-md"
-            >
-              Start Level {selectedLevel}
-            </button>
+              <button
+                type="button"
+                onClick={handleStartLevel}
+                className="h-16 w-full rounded-2xl bg-gradient-to-b from-green-400 to-green-600 text-[#08140C] font-black uppercase tracking-widest text-base shadow-[0_16px_40px_rgba(34,197,94,0.3)] active:scale-[0.98] transition-transform"
+              >
+                Play Level {selectedLevel}
+              </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -177,7 +173,7 @@ export default function BlackJackGame() {
           <video
             ref={videoRef}
             src={clip.videoUrl}
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-contain bg-black"
             playsInline
             preload="auto"
             disablePictureInPicture

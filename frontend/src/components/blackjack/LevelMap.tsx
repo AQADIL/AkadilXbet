@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ChessPawn, Lock, Flag } from "lucide-react";
+import { Crown, Lock, Play, Sparkles } from "lucide-react";
 
 interface LevelMapProps {
   unlockedLevel: number;
@@ -9,105 +9,131 @@ interface LevelMapProps {
   onSelect: (level: number) => void;
 }
 
-const LEVEL_POINTS = [
-  { x: 24, y: 74 },
-  { x: 50, y: 28 },
-  { x: 76, y: 74 },
-  { x: 50, y: 44 },
-  { x: 24, y: 28 },
+const LEVELS = [
+  { level: 1, x: 18, y: 78, label: "21" },
+  { level: 2, x: 36, y: 60, label: "20" },
+  { level: 3, x: 58, y: 45, label: "A" },
+  { level: 4, x: 42, y: 28, label: "18" },
+  { level: 5, x: 72, y: 16, label: "B" },
 ];
 
 export default function LevelMap({ unlockedLevel, selectedLevel, onSelect }: LevelMapProps) {
-  const pawnPoint = LEVEL_POINTS[Math.max(0, Math.min(selectedLevel - 1, LEVEL_POINTS.length - 1))];
+  const selected = LEVELS.find((item) => item.level === selectedLevel) ?? LEVELS[0];
 
   return (
-    <div className="relative w-full max-w-md mx-auto rounded-3xl border border-white/15 bg-[#112A18]/55 backdrop-blur-xl p-4">
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-white/45 text-[10px] uppercase tracking-[0.3em] font-semibold">
-          Ranked Hand Path
+    <div className="relative h-full w-full overflow-hidden rounded-[2rem] border border-white/10 bg-[#08140C] shadow-2xl">
+      <div className="absolute inset-0 bg-[linear-gradient(135deg,#112A18_0%,#08140C_45%,#15351F_100%)]" />
+      <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_20%_25%,rgba(74,222,128,0.35),transparent_30%),radial-gradient(circle_at_75%_15%,rgba(250,204,21,0.22),transparent_24%),radial-gradient(circle_at_60%_80%,rgba(34,197,94,0.24),transparent_30%)]" />
+
+      <div className="absolute inset-0 rotate-45 scale-150 opacity-[0.08]">
+        <div className="grid grid-cols-8 grid-rows-8 h-full w-full">
+          {Array.from({ length: 64 }).map((_, idx) => (
+            <div
+              key={idx}
+              className={idx % 2 === 0 ? "bg-white" : "bg-transparent"}
+            />
+          ))}
+        </div>
+      </div>
+
+      <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <path
+          d="M 18 78 C 25 68, 28 67, 36 60 S 52 50, 58 45 S 50 34, 42 28 S 63 18, 72 16"
+          fill="none"
+          stroke="rgba(255,255,255,0.14)"
+          strokeWidth="10"
+          strokeLinecap="round"
+        />
+        <path
+          d="M 18 78 C 25 68, 28 67, 36 60 S 52 50, 58 45 S 50 34, 42 28 S 63 18, 72 16"
+          fill="none"
+          stroke="rgba(74,222,128,0.55)"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeDasharray="2 6"
+        />
+      </svg>
+
+      <motion.div
+        className="absolute z-20 -translate-x-1/2 -translate-y-[120%]"
+        animate={{ left: `${selected.x}%`, top: `${selected.y}%`, y: [0, -12, 0] }}
+        transition={{
+          left: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
+          top: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
+          y: { duration: 0.85, ease: "easeInOut" },
+        }}
+      >
+        <div className="relative flex h-14 w-14 items-center justify-center rounded-full border border-emerald-200/80 bg-emerald-300 shadow-[0_14px_35px_rgba(0,0,0,0.35),0_0_34px_rgba(74,222,128,0.55)]">
+          <Crown size={25} className="text-[#08140C]" strokeWidth={2.8} />
+          <span className="absolute -bottom-5 rounded-full border border-emerald-300/40 bg-[#08140C]/80 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-emerald-200 backdrop-blur-md">
+            You
+          </span>
+        </div>
+      </motion.div>
+
+      {LEVELS.map((item) => {
+        const unlocked = item.level <= unlockedLevel;
+        const isSelected = item.level === selectedLevel;
+
+        return (
+          <button
+            key={item.level}
+            type="button"
+            disabled={!unlocked}
+            onClick={() => unlocked && onSelect(item.level)}
+            className="absolute z-10 -translate-x-1/2 -translate-y-1/2"
+            style={{ left: `${item.x}%`, top: `${item.y}%` }}
+          >
+            <motion.div
+              whileTap={unlocked ? { scale: 0.92 } : undefined}
+              animate={isSelected ? { scale: [1, 1.08, 1] } : { scale: 1 }}
+              transition={isSelected ? { duration: 1.5, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" } : { duration: 0.2 }}
+              className={`relative flex h-16 w-16 items-center justify-center rounded-2xl border shadow-xl transition-all duration-200 ${
+                unlocked
+                  ? isSelected
+                    ? "border-emerald-200 bg-emerald-300 text-[#08140C] shadow-[0_0_34px_rgba(74,222,128,0.55)]"
+                    : "border-white/30 bg-white/15 text-white backdrop-blur-md"
+                  : "border-white/10 bg-black/25 text-white/35 backdrop-blur-md"
+              }`}
+            >
+              <div className="absolute -inset-1 rounded-[1.35rem] border border-white/10" />
+              {unlocked ? (
+                item.level === 5 ? (
+                  <Sparkles size={22} strokeWidth={2.7} />
+                ) : (
+                  <span className="text-lg font-black tracking-tight">{item.label}</span>
+                )
+              ) : (
+                <Lock size={20} />
+              )}
+              <span className={`absolute -bottom-5 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-widest ${isSelected ? "bg-emerald-300 text-[#08140C]" : "bg-black/45 text-white/55"}`}>
+                L{item.level}
+              </span>
+            </motion.div>
+          </button>
+        );
+      })}
+
+      <div className="absolute left-5 top-5 z-30 flex flex-col gap-1">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.35em] text-white/40">
+          BlackJack Road
         </span>
-        <span className="text-green-300/80 text-xs font-black tabular-nums">
+        <span className="text-3xl font-black uppercase leading-none text-white drop-shadow-xl">
+          Level Up
+        </span>
+      </div>
+
+      <div className="absolute bottom-5 right-5 z-30 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-right backdrop-blur-xl">
+        <span className="block text-[9px] font-semibold uppercase tracking-[0.28em] text-white/40">
+          Progress
+        </span>
+        <span className="text-xl font-black text-emerald-200">
           {unlockedLevel}/5
         </span>
       </div>
 
-      <div className="relative w-full aspect-[4/3] rounded-2xl bg-[#08140C]/80 border border-white/10 overflow-hidden">
-        <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full">
-          <defs>
-            <linearGradient id="path-glow" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="rgba(74,222,128,0.75)" />
-              <stop offset="100%" stopColor="rgba(74,222,128,0.2)" />
-            </linearGradient>
-          </defs>
-
-          {LEVEL_POINTS.slice(0, -1).map((point, idx) => {
-            const next = LEVEL_POINTS[idx + 1];
-            return (
-              <line
-                key={`line-${idx}`}
-                x1={point.x}
-                y1={point.y}
-                x2={next.x}
-                y2={next.y}
-                stroke="url(#path-glow)"
-                strokeWidth={2}
-                strokeLinecap="round"
-                opacity={0.7}
-              />
-            );
-          })}
-        </svg>
-
-        <motion.div
-          className="absolute -translate-x-1/2 -translate-y-1/2"
-          animate={{ left: `${pawnPoint.x}%`, top: `${pawnPoint.y}%`, y: [0, -8, 0] }}
-          transition={{
-            left: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
-            top: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
-            y: { duration: 0.8, ease: "easeInOut" },
-          }}
-        >
-          <div className="w-12 h-12 rounded-2xl border border-emerald-300/70 bg-emerald-400/20 backdrop-blur-md flex items-center justify-center shadow-[0_0_24px_rgba(74,222,128,0.35)]">
-            <ChessPawn size={24} className="text-emerald-200" />
-          </div>
-        </motion.div>
-
-        {LEVEL_POINTS.map((point, idx) => {
-          const level = idx + 1;
-          const unlocked = level <= unlockedLevel;
-          const selected = level === selectedLevel;
-
-          return (
-            <button
-              key={`lvl-${level}`}
-              type="button"
-              onClick={() => unlocked && onSelect(level)}
-              disabled={!unlocked}
-              className="absolute -translate-x-1/2 -translate-y-1/2"
-              style={{ left: `${point.x}%`, top: `${point.y}%` }}
-            >
-              <div
-                className={`w-11 h-11 rounded-xl border backdrop-blur-md flex items-center justify-center transition-all duration-200 ${
-                  unlocked
-                    ? selected
-                      ? "bg-emerald-400/25 border-emerald-300/70 shadow-[0_0_20px_rgba(74,222,128,0.35)]"
-                      : "bg-white/10 border-white/25"
-                    : "bg-white/5 border-white/10 opacity-70"
-                }`}
-              >
-                {unlocked ? (
-                  level === 5 ? (
-                    <Flag size={18} className="text-emerald-200" />
-                  ) : (
-                    <span className="text-xs font-black text-white/85">{level}</span>
-                  )
-                ) : (
-                  <Lock size={16} className="text-white/40" />
-                )}
-              </div>
-            </button>
-          );
-        })}
+      <div className="absolute bottom-5 left-5 z-30 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl">
+        <Play size={20} className="text-emerald-200" fill="currentColor" />
       </div>
     </div>
   );

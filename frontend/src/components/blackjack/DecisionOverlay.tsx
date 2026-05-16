@@ -29,31 +29,29 @@ export default function DecisionOverlay({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="absolute inset-0 z-20 flex flex-col items-center justify-between overflow-hidden"
+          className="absolute inset-0 z-20 flex flex-col items-center justify-between overflow-hidden pointer-events-none"
         >
-          <div className="absolute inset-0 bg-green-950/40 backdrop-blur-xl" />
-
           <div className="relative z-10 w-full" />
 
-          <div className="relative z-10 flex flex-col items-center gap-3 px-4 select-none pointer-events-none">
-            <p className="text-white/50 text-[11px] uppercase tracking-[0.35em] font-semibold">
-              Your move
+          <div className="relative z-10 flex flex-col items-center gap-2 px-4 select-none">
+            <p className="rounded-full border border-white/15 bg-black/30 px-4 py-2 text-white/70 text-[10px] uppercase tracking-[0.35em] font-semibold backdrop-blur-sm">
+              Raise or stay
             </p>
-            <p className="text-white/35 text-[10px] uppercase tracking-[0.28em] font-semibold">
+            <p className="text-white/45 text-[10px] uppercase tracking-[0.28em] font-semibold">
               Decision {step}/{totalSteps}
             </p>
             <motion.p
               initial={{ scale: 0.88, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.06, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="text-white font-black uppercase leading-none tracking-tight text-[clamp(3.5rem,18vw,6rem)]"
-              style={{ textShadow: "0 0 60px rgba(74,222,128,0.45)" }}
+              className="text-center text-white font-black uppercase leading-none tracking-tight text-[clamp(3.4rem,18vw,6.4rem)]"
+              style={{ textShadow: "0 8px 40px rgba(0,0,0,0.85), 0 0 45px rgba(74,222,128,0.35)" }}
             >
-              Hit or Stand?
+              Raise?
             </motion.p>
           </div>
 
-          <div className="relative z-10 w-full px-4 pb-6 flex flex-col gap-3">
+          <div className="relative z-10 w-full px-4 pb-6 flex flex-col gap-3 pointer-events-auto">
             <motion.button
               whileTap={{ scale: 0.97 }}
               whileHover={{ scale: 1.01 }}
@@ -63,7 +61,7 @@ export default function DecisionOverlay({
                 ${standNudged ? "opacity-55 saturate-50" : "opacity-100"}
                 hover:bg-green-500/30 hover:border-green-400/60
                 active:bg-green-500/40
-                backdrop-blur-md shadow-lg shadow-green-900/30`}
+                backdrop-blur-sm shadow-lg shadow-green-900/30`}
             >
               Hit
             </motion.button>
@@ -79,7 +77,7 @@ export default function DecisionOverlay({
                 ${hitNudged ? "opacity-60 saturate-50" : "opacity-100"}
                 hover:bg-white/12 hover:border-white/30
                 active:bg-white/15
-                backdrop-blur-md shadow-lg`}
+                backdrop-blur-sm shadow-lg`}
             >
               Stand
             </motion.button>

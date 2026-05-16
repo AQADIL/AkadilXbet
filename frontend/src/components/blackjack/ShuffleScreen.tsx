@@ -51,7 +51,7 @@ export default function ShuffleScreen({ clip, onComplete }: ShuffleScreenProps) 
       <video
         ref={videoRef}
         src={clip.videoUrl}
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full object-contain bg-black"
         playsInline
         muted
         preload="auto"
