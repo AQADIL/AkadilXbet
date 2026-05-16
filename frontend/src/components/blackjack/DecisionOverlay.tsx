@@ -51,7 +51,7 @@ export default function DecisionOverlay({
             </motion.p>
           </div>
 
-          <div className="relative z-10 w-full px-4 pb-6 flex flex-col gap-3 pointer-events-auto">
+          <div className="relative z-10 w-full px-4 pb-24 flex flex-col gap-3 pointer-events-auto">
             <motion.button
               whileTap={{ scale: 0.97 }}
               whileHover={{ scale: 1.01 }}

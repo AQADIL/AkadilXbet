@@ -2,7 +2,6 @@
 
 import { useRef, useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Layers, ShieldCheck, Trophy } from "lucide-react";
 import type { IntroClip } from "@/data/blackjackClips";
 
 interface ShuffleScreenProps {
@@ -68,15 +67,6 @@ export default function ShuffleScreen({ clip, onComplete }: ShuffleScreenProps) 
         transition={{ duration: 0.9, ease: "easeOut" }}
       >
         <div className="absolute inset-x-0 top-[18%] flex flex-col items-center gap-3">
-          <motion.div
-            initial={{ y: 12, opacity: 0 }}
-            animate={{ y: progress > 0.55 ? 0 : 12, opacity: progress > 0.55 ? 1 : 0 }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
-            className="w-16 h-16 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-xl flex items-center justify-center"
-          >
-            <Layers size={28} className="text-green-300" />
-          </motion.div>
-
           <motion.p
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: progress > 0.62 ? 1 : 0, y: progress > 0.62 ? 0 : 12 }}
@@ -86,26 +76,10 @@ export default function ShuffleScreen({ clip, onComplete }: ShuffleScreenProps) 
           >
             BlackJack
           </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: progress > 0.72 ? 1 : 0, y: progress > 0.72 ? 0 : 10 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="flex items-center gap-2"
-          >
-            <span className="h-8 px-3 rounded-xl border border-white/20 bg-white/10 backdrop-blur-xl text-white/80 text-xs uppercase tracking-widest font-semibold flex items-center gap-2">
-              <ShieldCheck size={14} />
-              Secure Table
-            </span>
-            <span className="h-8 px-3 rounded-xl border border-white/20 bg-white/10 backdrop-blur-xl text-white/80 text-xs uppercase tracking-widest font-semibold flex items-center gap-2">
-              <Trophy size={14} />
-              Ranked Levels
-            </span>
-          </motion.div>
         </div>
       </motion.div>
 
-      <div className="relative z-10 w-full px-4 pb-8 flex flex-col gap-3">
+      <div className="relative z-10 w-full px-6 pb-24 flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <span className="text-white/40 text-[10px] uppercase tracking-[0.35em] font-semibold">
             Entering table
@@ -115,9 +89,9 @@ export default function ShuffleScreen({ clip, onComplete }: ShuffleScreenProps) 
           </span>
         </div>
 
-        <div className="w-full h-[3px] rounded-full bg-white/10 overflow-hidden">
+        <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden shadow-[0_0_15px_rgba(255,255,255,0.1)]">
           <motion.div
-            className="h-full rounded-full bg-green-400"
+            className="h-full rounded-full bg-green-400 shadow-[0_0_15px_rgba(74,222,128,0.6)]"
             style={{ width: `${progress * 100}%` }}
             transition={{ ease: "linear", duration: 0 }}
           />

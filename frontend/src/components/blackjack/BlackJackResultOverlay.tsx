@@ -81,7 +81,7 @@ export default function BlackJackResultOverlay({
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          className="relative z-10 w-full px-4 pb-6"
+          className="relative z-10 w-full px-4 pb-28"
         >
           <motion.button
             whileTap={{ scale: 0.97 }}

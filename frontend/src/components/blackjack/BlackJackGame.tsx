@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import ShuffleScreen from "@/components/blackjack/ShuffleScreen";
 import DecisionOverlay from "@/components/blackjack/DecisionOverlay";
 import BlackJackResultOverlay from "@/components/blackjack/BlackJackResultOverlay";
+import BettingOverlay from "@/components/blackjack/BettingOverlay";
 import LevelMap from "@/components/blackjack/LevelMap";
 import {
   getRandomIntroClip,
@@ -15,7 +16,7 @@ import {
   type IntroClip,
 } from "@/data/blackjackClips";
 
-type GamePhase = "INTRO" | "LEVELS" | "PLAYING" | "DECISION" | "RESULT";
+type GamePhase = "INTRO" | "LEVELS" | "BETTING" | "PLAYING" | "DECISION" | "RESULT";
 
 export default function BlackJackGame() {
   const [phase, setPhase] = useState<GamePhase>("INTRO");
@@ -87,8 +88,13 @@ export default function BlackJackGame() {
     setDecision(null);
     setOutcome(levelClip.outcome);
     setDecisionIndex(0);
-    setPhase("PLAYING");
+    setPhase("BETTING");
   }, [selectedLevel]);
+
+  const handlePlayAfterBet = useCallback((betAmount: number) => {
+    // В будущем тут можно сохранить betAmount в стейт или отправить на бекенд
+    setPhase("PLAYING");
+  }, []);
 
   const handleDecide = useCallback(
     (picked: BlackJackDecision) => {
@@ -148,6 +154,12 @@ export default function BlackJackGame() {
               />
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {phase === "BETTING" && (
+          <BettingOverlay onPlay={handlePlayAfterBet} level={selectedLevel} />
         )}
       </AnimatePresence>
 
