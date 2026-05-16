@@ -2,12 +2,13 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Home, Zap, Timer, Dices, User } from "lucide-react";
+import { Home, Zap, Timer, Dices, User, Layers } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/", label: "Home", icon: Home },
   { href: "/fast-games", label: "Fast Games", icon: Zap },
   { href: "/247", label: "24/7", icon: Timer },
+  { href: "/blackjack", label: "BlackJack", icon: Layers },
   { href: "/casino", label: "Casino", icon: Dices },
   { href: "/profile", label: "Profile", icon: User },
 ] as const;
