@@ -28,21 +28,31 @@ export default function BottomNav() {
               className="flex flex-col items-center justify-center gap-1 flex-1 h-full group"
             >
               <span
-                className={`flex items-center justify-center w-10 h-7 rounded-lg transition-all duration-200 ${
+                className={`flex items-center justify-center rounded-lg transition-all duration-200 ${
+                  href === "/blackjack" ? "w-20 h-9" : "w-16 h-7"
+                } ${
                   isActive
                     ? "bg-brand-primary/15"
                     : "group-hover:bg-white/5"
                 }`}
               >
-                <Icon
-                  size={20}
-                  strokeWidth={isActive ? 2.5 : 1.75}
-                  className={`transition-colors duration-200 ${
-                    isActive
-                      ? "text-brand-glow"
-                      : "text-text-muted group-hover:text-text-secondary"
-                  }`}
-                />
+                {href === "/blackjack" ? (
+                  <img 
+                    src="/videos/blackjack/blackjack_logo_trans.png" 
+                    alt="BJ" 
+                    className={`h-7 w-full object-contain transition-all duration-200 ${isActive ? "opacity-100 drop-shadow-[0_0_12px_rgba(74,222,128,0.8)]" : "opacity-40 grayscale group-hover:opacity-70 group-hover:grayscale-0"}`} 
+                  />
+                ) : (
+                  <Icon
+                    size={24}
+                    strokeWidth={isActive ? 2.5 : 1.75}
+                    className={`transition-colors duration-200 ${
+                      isActive
+                        ? "text-brand-glow"
+                        : "text-text-muted group-hover:text-text-secondary"
+                    }`}
+                  />
+                )}
               </span>
               <span
                 className={`text-[10px] font-semibold tracking-wide uppercase transition-colors duration-200 ${

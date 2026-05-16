@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Lock, Play, Sparkles, ArrowDown } from "lucide-react";
+import { Lock, X, Play, Sparkles, ArrowDown } from "lucide-react";
 
 interface LevelMapProps {
   unlockedLevel: number;
@@ -106,13 +106,39 @@ export default function LevelMap({ unlockedLevel, selectedLevel, previousLevel, 
             >
               <div className="absolute -inset-1 rounded-[1.35rem] border border-white/10" />
               {unlocked ? (
-                item.level === 5 ? (
-                  <Sparkles size={22} strokeWidth={2.7} />
-                ) : (
-                  <span className="text-lg font-black tracking-tight">{item.label}</span>
-                )
+                <>
+                  <img src="/videos/blackjack/blackjack.png" alt="BJ" className={`w-12 h-12 object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)] ${item.level < selectedLevel ? 'opacity-30' : ''}`} />
+                  {item.level < selectedLevel && (
+                    <motion.div 
+                      className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                      initial="hidden"
+                      animate="visible"
+                      variants={{
+                        hidden: { opacity: 0 },
+                        visible: { opacity: 1, transition: { staggerChildren: 0.15 } }
+                      }}
+                    >
+                      <div className="relative w-10 h-10">
+                        <motion.div 
+                          className="absolute top-1/2 left-0 w-full h-[4px] rounded-full bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.9)]"
+                          variants={{
+                            hidden: { scaleX: 0, rotate: 45 },
+                            visible: { scaleX: 1, rotate: 45, transition: { duration: 0.3, ease: "easeOut" } }
+                          }}
+                        />
+                        <motion.div 
+                          className="absolute top-1/2 left-0 w-full h-[4px] rounded-full bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.9)]"
+                          variants={{
+                            hidden: { scaleX: 0, rotate: -45 },
+                            visible: { scaleX: 1, rotate: -45, transition: { duration: 0.3, ease: "easeOut" } }
+                          }}
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </>
               ) : (
-                <Lock size={20} />
+                <Lock size={20} className="text-white/40" />
               )}
               <span className={`absolute -bottom-5 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-widest ${isSelected ? "bg-emerald-300 text-[#08140C]" : "bg-black/45 text-white/55"}`}>
                 L{item.level}
@@ -122,13 +148,8 @@ export default function LevelMap({ unlockedLevel, selectedLevel, previousLevel, 
         );
       })}
 
-      <div className="absolute left-5 top-5 z-30 flex flex-col gap-1">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.35em] text-white/40">
-          BlackJack Road
-        </span>
-        <span className="text-3xl font-black uppercase leading-none text-white drop-shadow-xl">
-          Level Up
-        </span>
+      <div className="absolute left-5 top-6 z-30">
+        <img src="/videos/blackjack/blackjack_logo_trans.png" alt="BlackJack Logo" className="w-36 object-contain drop-shadow-xl" />
       </div>
 
       <div className="absolute bottom-5 right-5 z-30 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-right backdrop-blur-xl">
