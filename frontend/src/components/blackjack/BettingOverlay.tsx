@@ -24,11 +24,12 @@ export default function BettingOverlay({ onPlay, level }: BettingOverlayProps) {
       className="absolute inset-0 z-30 flex flex-col items-center justify-center overflow-hidden bg-black/60 backdrop-blur-md px-6 pb-24"
     >
       <div className="flex-1 w-full flex flex-col items-center justify-center mt-12 gap-8">
-        <div className="flex flex-col items-center gap-2">
-          <span className="text-emerald-400 font-semibold uppercase tracking-[0.35em] text-xs">
+        <div className="flex flex-col items-center gap-3">
+          <img src="/videos/blackjack/blackjack_logo_trans.png" alt="BlackJack" className="w-40 object-contain drop-shadow-2xl mb-1" />
+          <span className="text-emerald-400 font-semibold uppercase tracking-[0.35em] text-[10px]">
             Level {level}
           </span>
-          <h2 className="text-white font-black uppercase text-4xl tracking-tight text-center leading-none">
+          <h2 className="text-white font-black uppercase text-3xl tracking-tight text-center leading-none">
             Place Your Bet
           </h2>
         </div>

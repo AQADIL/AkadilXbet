@@ -73,16 +73,15 @@ export default function ShuffleScreen({ clip, onComplete }: ShuffleScreenProps) 
           Skip
         </button>
 
-        <div className="absolute inset-x-0 top-[18%] flex flex-col items-center gap-3">
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: progress > 0.62 ? 1 : 0, y: progress > 0.62 ? 0 : 12 }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
-            className="text-[clamp(2rem,10vw,3.2rem)] font-black uppercase tracking-tight text-white"
-            style={{ textShadow: "0 0 42px rgba(74,222,128,0.35)" }}
-          >
-            BlackJack
-          </motion.p>
+        <div className="absolute top-2 left-32 z-60">
+          <motion.img
+            src="/videos/blackjack/blackjack_logo_trans.png"
+            alt="BlackJack"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: progress > 0.1 ? 1 : 0, x: progress > 0.1 ? 0 : -20 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="w-56 object-contain drop-shadow-[0_0_25px_rgba(74,222,128,0.35)]"
+          />
         </div>
       </motion.div>
 
