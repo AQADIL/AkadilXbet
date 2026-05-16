@@ -80,8 +80,9 @@ export default function BlackJackGame() {
     videoRef.current?.play().catch(() => {});
   }, [phase]);
 
-  const handleStartLevel = useCallback(() => {
-    const levelClip = getBlackJackClipByLevel(selectedLevel);
+  const handleStartLevel = useCallback((level = selectedLevel) => {
+    const levelClip = getBlackJackClipByLevel(level);
+    setSelectedLevel(level);
     setClip(levelClip);
     setDecision(null);
     setOutcome(levelClip.outcome);
@@ -114,7 +115,7 @@ export default function BlackJackGame() {
   }, [outcome, selectedLevel, unlockedLevel]);
 
   return (
-    <div className="relative w-full h-[calc(100svh-4rem)] bg-black overflow-hidden">
+    <div className="fixed inset-0 z-40 bg-black overflow-hidden">
       <AnimatePresence mode="wait">
         {phase === "INTRO" && (
           <motion.div
@@ -132,37 +133,19 @@ export default function BlackJackGame() {
         {phase === "LEVELS" && (
           <motion.div
             key="levels"
-            className="absolute inset-0 z-20 flex flex-col bg-[#08140C]"
+            className="absolute inset-0 z-20 bg-[#08140C] pb-20"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="relative flex-1 min-h-0 p-3">
+            <div className="relative h-full w-full p-3">
               <LevelMap
                 unlockedLevel={unlockedLevel}
                 selectedLevel={selectedLevel}
                 onSelect={setSelectedLevel}
+                onStart={handleStartLevel}
               />
-            </div>
-
-            <div className="relative z-30 px-4 pb-4 flex flex-col gap-3">
-              <div className="rounded-2xl border border-white/15 bg-[#112A18]/70 backdrop-blur-xl px-4 py-3 shadow-xl">
-                <p className="text-white/45 text-[10px] uppercase tracking-[0.3em] font-semibold mb-1">
-                  Current Story
-                </p>
-                <p className="text-white text-lg font-black uppercase tracking-wide">
-                  {getBlackJackClipByLevel(selectedLevel).title}
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleStartLevel}
-                className="h-16 w-full rounded-2xl bg-gradient-to-b from-green-400 to-green-600 text-[#08140C] font-black uppercase tracking-widest text-base shadow-[0_16px_40px_rgba(34,197,94,0.3)] active:scale-[0.98] transition-transform"
-              >
-                Play Level {selectedLevel}
-              </button>
             </div>
           </motion.div>
         )}

@@ -7,6 +7,7 @@ interface LevelMapProps {
   unlockedLevel: number;
   selectedLevel: number;
   onSelect: (level: number) => void;
+  onStart: (level: number) => void;
 }
 
 const LEVELS = [
@@ -17,7 +18,7 @@ const LEVELS = [
   { level: 5, x: 72, y: 16, label: "B" },
 ];
 
-export default function LevelMap({ unlockedLevel, selectedLevel, onSelect }: LevelMapProps) {
+export default function LevelMap({ unlockedLevel, selectedLevel, onSelect, onStart }: LevelMapProps) {
   const selected = LEVELS.find((item) => item.level === selectedLevel) ?? LEVELS[0];
 
   return (
@@ -80,7 +81,11 @@ export default function LevelMap({ unlockedLevel, selectedLevel, onSelect }: Lev
             key={item.level}
             type="button"
             disabled={!unlocked}
-            onClick={() => unlocked && onSelect(item.level)}
+            onClick={() => {
+              if (!unlocked) return;
+              onSelect(item.level);
+              onStart(item.level);
+            }}
             className="absolute z-10 -translate-x-1/2 -translate-y-1/2"
             style={{ left: `${item.x}%`, top: `${item.y}%` }}
           >
