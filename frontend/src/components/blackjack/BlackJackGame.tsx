@@ -88,12 +88,13 @@ export default function BlackJackGame() {
 
   const handleNext = useCallback(() => {
     setPreviousLevel(selectedLevel);
-    if (outcome === "WIN" && selectedLevel === unlockedLevel && unlockedLevel < 5) {
+    // Открываем следующий уровень в любом случае
+    if (selectedLevel === unlockedLevel && unlockedLevel < 5) {
       setUnlockedLevel((prev) => Math.min(5, prev + 1));
       setSelectedLevel((prev) => Math.min(5, prev + 1));
     }
     setPhase("LEVELS");
-  }, [outcome, selectedLevel, unlockedLevel]);
+  }, [selectedLevel, unlockedLevel]);
 
   return (
     <div className="fixed inset-0 z-40 bg-black overflow-hidden">
@@ -156,24 +157,10 @@ export default function BlackJackGame() {
             onEnded={handleEnded}
           />
 
-          <div
-            className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 pt-5 pb-6 pointer-events-none"
-            style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%)" }}
-          >
-            <span className="text-white/40 text-[10px] uppercase tracking-[0.3em] font-semibold">
-              BlackJack Level {clip.level}
-            </span>
-            <span className="text-white/55 text-[11px] uppercase tracking-wider font-semibold">
-              {clip.title}
-            </span>
-          </div>
-
           <DecisionOverlay
             visible={phase === "DECISION"}
             onDecide={handleDecide}
             uiHint={clip.uiHint}
-            step={Math.min(decisionIndex + 1, Math.max(1, clip.decisionTimestamps.length))}
-            totalSteps={Math.max(1, clip.decisionTimestamps.length)}
           />
 
           {phase === "RESULT" && (
