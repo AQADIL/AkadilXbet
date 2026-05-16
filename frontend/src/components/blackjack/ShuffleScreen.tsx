@@ -68,7 +68,7 @@ export default function ShuffleScreen({ clip, onComplete }: ShuffleScreenProps) 
       >
         <button
           onClick={onComplete}
-          className="absolute top-8 right-6 z-50 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white/70 text-xs font-bold uppercase tracking-widest backdrop-blur-md active:scale-95"
+          className="absolute top-14 right-5 z-50 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-white/50 hover:text-white hover:bg-white/20 text-[10px] font-bold uppercase tracking-widest backdrop-blur-md active:scale-95 transition-all pointer-events-auto"
         >
           Skip
         </button>

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Lock, Play, Sparkles } from "lucide-react";
+import { Lock, Play, Sparkles, ArrowDown } from "lucide-react";
 
 interface LevelMapProps {
   unlockedLevel: number;
@@ -58,20 +58,20 @@ export default function LevelMap({ unlockedLevel, selectedLevel, previousLevel, 
       </svg>
 
       <motion.div
-        className="absolute z-20 -translate-x-1/2 -translate-y-[120%]"
+        className="absolute z-20 -translate-x-1/2 -translate-y-[180%]"
         initial={{ left: `${prev.x}%`, top: `${prev.y}%` }}
-        animate={{ left: `${selected.x}%`, top: `${selected.y}%`, y: [0, -12, 0] }}
+        animate={{ left: `${selected.x}%`, top: `${selected.y}%`, y: [0, -15, 0] }}
         transition={{
           left: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
           top: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
-          y: { duration: 0.85, ease: "easeInOut" },
+          y: { duration: 0.85, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" },
         }}
       >
-        <div className="relative flex h-14 w-14 items-center justify-center rounded-full border-2 border-emerald-400/30 bg-[#08140C] shadow-[0_0_20px_rgba(74,222,128,0.3)]">
-          <div className="h-5 w-5 rounded-full bg-emerald-400 shadow-[0_0_15px_rgba(74,222,128,0.8)] animate-pulse" />
-          <span className="absolute -bottom-6 rounded-full border border-emerald-300/40 bg-[#08140C]/80 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-emerald-200 backdrop-blur-md">
+        <div className="relative flex flex-col items-center">
+          <span className="mb-1 rounded-full border border-emerald-400/40 bg-emerald-950/90 px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-emerald-300 backdrop-blur-md shadow-[0_0_10px_rgba(16,185,129,0.3)]">
             You
           </span>
+          <ArrowDown strokeWidth={4} size={28} className="text-emerald-400 drop-shadow-[0_0_12px_rgba(52,211,153,0.8)]" />
         </div>
       </motion.div>
 
