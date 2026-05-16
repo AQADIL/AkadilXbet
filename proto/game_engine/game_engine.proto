@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package game_engine;
+
+option go_package = "github.com/akadilxbet/game-engine-service/internal/pb";
+
+service GameEngineService {
+  rpc CalculateOutcome (OutcomeRequest) returns (OutcomeResponse);
+}
+
+message OutcomeRequest {
+  string game_type  = 1;
+  int64  bet_amount = 2;
+  string player_id  = 3;
+}
+
+message OutcomeResponse {
+  bool   player_wins = 1;
+  int64  payout      = 2;
+  string reason      = 3;
+}
