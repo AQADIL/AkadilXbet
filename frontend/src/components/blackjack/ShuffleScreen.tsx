@@ -2,10 +2,11 @@
 
 import { useRef, useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import type { ShuffleClip } from "@/data/blackjackClips";
+import { Layers, ShieldCheck, Trophy } from "lucide-react";
+import type { IntroClip } from "@/data/blackjackClips";
 
 interface ShuffleScreenProps {
-  clip: ShuffleClip;
+  clip: IntroClip;
   onComplete: () => void;
 }
 
@@ -58,12 +59,56 @@ export default function ShuffleScreen({ clip, onComplete }: ShuffleScreenProps) 
         onContextMenu={(e) => e.preventDefault()}
       />
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#08140C]/85 via-[#08140C]/15 to-[#08140C]/40 pointer-events-none" />
+
+      <motion.div
+        className="absolute inset-0 pointer-events-none"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: progress > 0.4 ? 1 : 0 }}
+        transition={{ duration: 0.9, ease: "easeOut" }}
+      >
+        <div className="absolute inset-x-0 top-[18%] flex flex-col items-center gap-3">
+          <motion.div
+            initial={{ y: 12, opacity: 0 }}
+            animate={{ y: progress > 0.55 ? 0 : 12, opacity: progress > 0.55 ? 1 : 0 }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+            className="w-16 h-16 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-xl flex items-center justify-center"
+          >
+            <Layers size={28} className="text-green-300" />
+          </motion.div>
+
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: progress > 0.62 ? 1 : 0, y: progress > 0.62 ? 0 : 12 }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+            className="text-[clamp(2rem,10vw,3.2rem)] font-black uppercase tracking-tight text-white"
+            style={{ textShadow: "0 0 42px rgba(74,222,128,0.35)" }}
+          >
+            BlackJack
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: progress > 0.72 ? 1 : 0, y: progress > 0.72 ? 0 : 10 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="flex items-center gap-2"
+          >
+            <span className="h-8 px-3 rounded-xl border border-white/20 bg-white/10 backdrop-blur-xl text-white/80 text-xs uppercase tracking-widest font-semibold flex items-center gap-2">
+              <ShieldCheck size={14} />
+              Secure Table
+            </span>
+            <span className="h-8 px-3 rounded-xl border border-white/20 bg-white/10 backdrop-blur-xl text-white/80 text-xs uppercase tracking-widest font-semibold flex items-center gap-2">
+              <Trophy size={14} />
+              Ranked Levels
+            </span>
+          </motion.div>
+        </div>
+      </motion.div>
 
       <div className="relative z-10 w-full px-4 pb-8 flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <span className="text-white/40 text-[10px] uppercase tracking-[0.35em] font-semibold">
-            Shuffling deck
+            Entering table
           </span>
           <span className="text-white/40 text-[10px] tabular-nums font-semibold">
             {Math.round(progress * 100)}%
