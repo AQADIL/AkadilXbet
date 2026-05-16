@@ -1,21 +1,46 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { BlackJackDecision, UiHint } from "@/data/blackjackClips";
+import type { BlackJackDecision } from "@/data/blackjackClips";
 
 interface DecisionOverlayProps {
   visible: boolean;
   onDecide: (decision: BlackJackDecision) => void;
   uiHint?: "hit" | "stand";
+  defaultChoice: BlackJackDecision;
 }
 
 export default function DecisionOverlay({
   visible,
   onDecide,
   uiHint,
+  defaultChoice,
 }: DecisionOverlayProps) {
   const hitNudged = uiHint === "hit";
   const standNudged = uiHint === "stand";
+
+  const [timeLeft, setTimeLeft] = useState(15);
+
+  useEffect(() => {
+    if (!visible) {
+      setTimeLeft(15);
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          onDecide(defaultChoice);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [visible, defaultChoice, onDecide]);
 
   return (
     <AnimatePresence>
@@ -27,6 +52,18 @@ export default function DecisionOverlay({
           transition={{ duration: 0.2 }}
           className="absolute inset-0 z-20 flex flex-col items-center justify-between overflow-hidden pointer-events-none"
         >
+          <div className="absolute top-6 right-6 z-50 flex items-center justify-center w-14 h-14">
+            <svg className="absolute inset-0 w-full h-full -rotate-90 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="46" fill="none" stroke="rgba(250,204,21,0.2)" strokeWidth="6" />
+              <circle
+                cx="50" cy="50" r="46" fill="none" stroke="rgba(250,204,21,1)" strokeWidth="6"
+                strokeDasharray="289" strokeDashoffset={289 - (289 * timeLeft) / 15}
+                className="transition-all duration-1000 ease-linear"
+              />
+            </svg>
+            <span className="text-amber-400 font-black text-lg tabular-nums">{timeLeft}</span>
+          </div>
+
           <div className="relative z-10 w-full" />
 
           <div className="relative z-10 flex flex-col items-center gap-2 px-4 select-none">

@@ -66,6 +66,13 @@ export default function ShuffleScreen({ clip, onComplete }: ShuffleScreenProps) 
         animate={{ opacity: progress > 0.4 ? 1 : 0 }}
         transition={{ duration: 0.9, ease: "easeOut" }}
       >
+        <button
+          onClick={onComplete}
+          className="absolute top-8 right-6 z-50 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white/70 text-xs font-bold uppercase tracking-widest backdrop-blur-md active:scale-95"
+        >
+          Skip
+        </button>
+
         <div className="absolute inset-x-0 top-[18%] flex flex-col items-center gap-3">
           <motion.p
             initial={{ opacity: 0, y: 12 }}

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Crown, Lock, Play, Sparkles } from "lucide-react";
+import { Lock, Play, Sparkles } from "lucide-react";
 
 interface LevelMapProps {
   unlockedLevel: number;
@@ -67,9 +67,9 @@ export default function LevelMap({ unlockedLevel, selectedLevel, previousLevel, 
           y: { duration: 0.85, ease: "easeInOut" },
         }}
       >
-        <div className="relative flex h-14 w-14 items-center justify-center rounded-full border border-emerald-200/80 bg-emerald-300 shadow-[0_14px_35px_rgba(0,0,0,0.35),0_0_34px_rgba(74,222,128,0.55)]">
-          <Crown size={25} className="text-[#08140C]" strokeWidth={2.8} />
-          <span className="absolute -bottom-5 rounded-full border border-emerald-300/40 bg-[#08140C]/80 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-emerald-200 backdrop-blur-md">
+        <div className="relative flex h-14 w-14 items-center justify-center rounded-full border-2 border-emerald-400/30 bg-[#08140C] shadow-[0_0_20px_rgba(74,222,128,0.3)]">
+          <div className="h-5 w-5 rounded-full bg-emerald-400 shadow-[0_0_15px_rgba(74,222,128,0.8)] animate-pulse" />
+          <span className="absolute -bottom-6 rounded-full border border-emerald-300/40 bg-[#08140C]/80 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-emerald-200 backdrop-blur-md">
             You
           </span>
         </div>

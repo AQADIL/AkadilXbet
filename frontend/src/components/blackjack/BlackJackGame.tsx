@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 import ShuffleScreen from "@/components/blackjack/ShuffleScreen";
 import DecisionOverlay from "@/components/blackjack/DecisionOverlay";
 import BlackJackResultOverlay from "@/components/blackjack/BlackJackResultOverlay";
@@ -16,7 +17,7 @@ import {
   type IntroClip,
 } from "@/data/blackjackClips";
 
-type GamePhase = "INTRO" | "LEVELS" | "BETTING" | "PLAYING" | "DECISION" | "RESULT";
+type GamePhase = "INTRO" | "LEVELS" | "BETTING" | "PLAYING" | "DECISION" | "RESULT" | "VICTORY";
 
 export default function BlackJackGame() {
   const [phase, setPhase] = useState<GamePhase>("INTRO");
@@ -30,6 +31,7 @@ export default function BlackJackGame() {
   const [outcome, setOutcome] = useState<BlackJackOutcome | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
+  const router = useRouter();
 
   const handleIntroComplete = useCallback(() => {
     setPhase("LEVELS");
@@ -49,10 +51,23 @@ export default function BlackJackGame() {
   }, [phase, clip.decisionTimestamps, decisionIndex]);
 
   const handleEnded = useCallback(() => {
-    if (phase !== "RESULT") {
-      setPhase("RESULT");
+    if (phase !== "RESULT" && phase !== "VICTORY") {
+      if (selectedLevel === 5) {
+        setPhase("VICTORY");
+      } else {
+        setPhase("RESULT");
+      }
     }
-  }, [phase]);
+  }, [phase, selectedLevel]);
+
+  useEffect(() => {
+    if (phase === "VICTORY") {
+      const t = setTimeout(() => {
+        router.push("/");
+      }, 7000);
+      return () => clearTimeout(t);
+    }
+  }, [phase, router]);
 
   useEffect(() => {
     if (phase !== "PLAYING") return;
@@ -161,6 +176,7 @@ export default function BlackJackGame() {
             visible={phase === "DECISION"}
             onDecide={handleDecide}
             uiHint={clip.uiHint}
+            defaultChoice={clip.scriptedChoice ?? "HIT"}
           />
 
           {phase === "RESULT" && (
@@ -172,6 +188,27 @@ export default function BlackJackGame() {
           )}
         </>
       )}
+      <AnimatePresence>
+        {phase === "VICTORY" && (
+          <motion.div
+            key="victory"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="absolute inset-0 z-50 flex items-center justify-center bg-black"
+          >
+            <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_center,rgba(74,222,128,0.5),transparent_60%)]" />
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 1, ease: "easeOut" }}
+              className="relative z-10 text-[18rem] leading-none font-black text-white"
+              style={{ textShadow: "0 0 80px rgba(74,222,128,0.8), 0 0 160px rgba(74,222,128,0.4)" }}
+            >
+              W
+            </motion.h1>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
