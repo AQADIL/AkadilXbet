@@ -5,17 +5,93 @@ package game_engine;
 option go_package = "github.com/akadilxbet/game-engine-service/internal/pb";
 
 service GameEngineService {
-  rpc CalculateOutcome (OutcomeRequest) returns (OutcomeResponse);
+  rpc PlayDice (PlayDiceRequest) returns (PlayDiceResponse);
+  rpc GetDiceHistory (PlayerRequest) returns (HistoryResponse);
+  rpc GetDiceStats (PlayerRequest) returns (StatsResponse);
+  rpc GetDiceLastResult (PlayerRequest) returns (HistoryItem);
+
+  rpc StartMines (StartMinesRequest) returns (StartMinesResponse);
+  rpc OpenMinesCell (OpenMinesCellRequest) returns (OpenMinesCellResponse);
+  rpc CashoutMines (GameRequest) returns (CashoutMinesResponse);
+  rpc GetMinesHistory (PlayerRequest) returns (HistoryResponse);
+  rpc GetMinesStats (PlayerRequest) returns (StatsResponse);
+  rpc GetActiveMinesGame (PlayerRequest) returns (ActiveMinesGameResponse);
+
+  rpc GetGameHistory (PlayerRequest) returns (HistoryResponse);
+  rpc GetPlayerGameStats (PlayerRequest) returns (StatsResponse);
 }
 
-message OutcomeRequest {
-  string game_type  = 1;
-  int64  bet_amount = 2;
-  string player_id  = 3;
+message PlayerRequest {
+  string player_id = 1;
 }
 
-message OutcomeResponse {
-  bool   player_wins = 1;
-  int64  payout      = 2;
-  string reason      = 3;
+message GameRequest {
+  string game_id = 1;
+}
+
+message PlayDiceRequest {
+  string player_id = 1;
+  int64 bet_amount = 2;
+}
+
+message PlayDiceResponse {
+  int32 dice_value = 1;
+  string result = 2;
+  double multiplier = 3;
+  int64 payout = 4;
+}
+
+message StartMinesRequest {
+  string player_id = 1;
+  int64 bet_amount = 2;
+  int32 mines = 3;
+}
+
+message StartMinesResponse {
+  string game_id = 1;
+  string status = 2;
+}
+
+message OpenMinesCellRequest {
+  string game_id = 1;
+  int32 cell = 2;
+}
+
+message OpenMinesCellResponse {
+  bool safe = 1;
+  string status = 2;
+  double multiplier = 3;
+}
+
+message CashoutMinesResponse {
+  string status = 1;
+  int64 payout = 2;
+  double multiplier = 3;
+}
+
+message HistoryItem {
+  string game_type = 1;
+  string result = 2;
+  int64 bet_amount = 3;
+  int64 payout = 4;
+  int64 created_at = 5;
+}
+
+message HistoryResponse {
+  repeated HistoryItem items = 1;
+}
+
+message StatsResponse {
+  int32 total_games = 1;
+  int32 wins = 2;
+  int32 losses = 3;
+  int64 total_bet = 4;
+  int64 total_payout = 5;
+}
+
+message ActiveMinesGameResponse {
+  string game_id = 1;
+  string status = 2;
+  int32 opened_safe = 3;
+  double multiplier = 4;
 }

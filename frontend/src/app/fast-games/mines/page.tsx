@@ -1,0 +1,19 @@
+import Link from "next/link";
+import MobileShell from "@/components/layout/MobileShell";
+import MinesGame from "@/components/game/MinesGame";
+
+export default function MinesPage() {
+    return (
+        <MobileShell>
+            <div className="min-h-[calc(100svh-4rem)] px-4 py-6">
+                <Link href="/fast-games" className="text-sm font-bold text-green-400">
+                    ← Back to Fast Games
+                </Link>
+
+                <div className="mt-5">
+                    <MinesGame />
+                </div>
+            </div>
+        </MobileShell>
+    );
+}

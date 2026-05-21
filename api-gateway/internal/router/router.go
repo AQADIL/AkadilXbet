@@ -14,6 +14,11 @@ func New(cfg *config.Config) http.Handler {
 	mux.HandleFunc("GET /health", healthHandler)
 	mux.HandleFunc("GET /ready", readyHandler)
 
+	mux.HandleFunc("POST /api/games/dice/play", dicePlayHandler)
+	mux.HandleFunc("POST /api/games/mines/start", minesStartHandler)
+	mux.HandleFunc("POST /api/games/mines/open", minesOpenHandler)
+	mux.HandleFunc("POST /api/games/mines/cashout", minesCashoutHandler)
+
 	return middleware.Chain(mux,
 		middleware.RequestID,
 		middleware.Logger,
