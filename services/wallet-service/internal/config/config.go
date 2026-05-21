@@ -3,15 +3,26 @@ package config
 import "os"
 
 type Config struct {
-	GRPCPort   string
+	GRPCPort    string
 	PostgresDSN string
+	NatsURL     string
 }
 
 func Load() *Config {
 	return &Config{
-		GRPCPort:    getEnv("GRPC_PORT", "50052"),
-		PostgresDSN: getEnv("POSTGRES_DSN", "postgres://postgres:postgres@localhost:5432/akadilxbet?sslmode=disable"),
+		GRPCPort:    getEnv("WALLET_SERVICE_GRPC_PORT", "50052"),
+		PostgresDSN: buildPostgresDSN(),
+		NatsURL:     getEnv("NATS_URL", "nats://localhost:4222"),
 	}
+}
+
+func buildPostgresDSN() string {
+	host := getEnv("POSTGRES_HOST", "localhost")
+	port := getEnv("POSTGRES_PORT", "5432")
+	user := readSecret("POSTGRES_USER")
+	pass := readSecret("POSTGRES_PASSWORD")
+	db := getEnv("POSTGRES_DB", "akadilxbet_db")
+	return "postgres://" + user + ":" + pass + "@" + host + ":" + port + "/" + db + "?sslmode=disable"
 }
 
 func getEnv(key, fallback string) string {

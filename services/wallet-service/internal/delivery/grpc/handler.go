@@ -2,8 +2,10 @@ package grpc
 
 import (
 	"context"
+	"errors"
 
 	"github.com/akadilxbet/wallet-service/internal/domain"
+	"github.com/akadilxbet/wallet-service/internal/pb"
 	"github.com/akadilxbet/wallet-service/internal/usecase"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -17,50 +19,53 @@ func NewWalletHandler(uc *usecase.WalletUseCase) *WalletHandler {
 	return &WalletHandler{uc: uc}
 }
 
-func (h *WalletHandler) GetProfile(ctx context.Context, userID string) (*domain.User, int64, error) {
-	user, balance, err := h.uc.GetProfile(ctx, userID)
+func (h *WalletHandler) GetBalance(ctx context.Context, req *pb.GetBalanceRequest) (*pb.GetBalanceResponse, error) {
+	if req.UserId == "" {
+		return nil, status.Error(codes.InvalidArgument, "user_id is required")
+	}
+	wallet, err := h.uc.GetBalance(ctx, req.UserId)
 	if err != nil {
-		switch err.(type) {
-		case domain.ErrUserNotFound:
-			return nil, 0, status.Error(codes.NotFound, "user not found")
-		default:
-			return nil, 0, status.Error(codes.Internal, "internal error")
+		if errors.As(err, &domain.ErrWalletNotFound{}) {
+			return nil, status.Error(codes.NotFound, "wallet not found")
 		}
+		return nil, status.Error(codes.Internal, "failed to get balance")
 	}
-	return user, balance, nil
+	return &pb.GetBalanceResponse{UserId: wallet.UserID, BalanceCents: wallet.BalanceCents}, nil
 }
 
-func (h *WalletHandler) GetBalance(ctx context.Context, userID string) (int64, error) {
-	balance, err := h.uc.GetBalance(ctx, userID)
+func (h *WalletHandler) Deposit(ctx context.Context, req *pb.DepositRequest) (*pb.BalanceResponse, error) {
+	if req.UserId == "" {
+		return nil, status.Error(codes.InvalidArgument, "user_id is required")
+	}
+	if req.AmountCents <= 0 {
+		return nil, status.Error(codes.InvalidArgument, "amount_cents must be positive")
+	}
+	wallet, err := h.uc.Deposit(ctx, req.UserId, req.AmountCents)
 	if err != nil {
-		return 0, status.Error(codes.Internal, "internal error")
-	}
-	return balance, nil
-}
-
-func (h *WalletHandler) Deposit(ctx context.Context, userID string, amount int64) (int64, error) {
-	if amount <= 0 {
-		return 0, status.Error(codes.InvalidArgument, "amount must be positive")
-	}
-	newBalance, err := h.uc.Deposit(ctx, userID, amount)
-	if err != nil {
-		return 0, status.Error(codes.Internal, "deposit failed")
-	}
-	return newBalance, nil
-}
-
-func (h *WalletHandler) Deduct(ctx context.Context, userID string, amount int64) (int64, error) {
-	if amount <= 0 {
-		return 0, status.Error(codes.InvalidArgument, "amount must be positive")
-	}
-	newBalance, err := h.uc.Deduct(ctx, userID, amount)
-	if err != nil {
-		switch err.(type) {
-		case domain.ErrInsufficientFunds:
-			return 0, status.Error(codes.FailedPrecondition, "insufficient funds")
-		default:
-			return 0, status.Error(codes.Internal, "deduct failed")
+		if errors.As(err, &domain.ErrWalletNotFound{}) {
+			return nil, status.Error(codes.NotFound, "wallet not found")
 		}
+		return nil, status.Error(codes.Internal, "deposit failed")
 	}
-	return newBalance, nil
+	return &pb.BalanceResponse{UserId: wallet.UserID, BalanceCents: wallet.BalanceCents}, nil
+}
+
+func (h *WalletHandler) Deduct(ctx context.Context, req *pb.DeductRequest) (*pb.BalanceResponse, error) {
+	if req.UserId == "" {
+		return nil, status.Error(codes.InvalidArgument, "user_id is required")
+	}
+	if req.AmountCents <= 0 {
+		return nil, status.Error(codes.InvalidArgument, "amount_cents must be positive")
+	}
+	wallet, err := h.uc.Deduct(ctx, req.UserId, req.AmountCents)
+	if err != nil {
+		if errors.As(err, &domain.ErrInsufficientFunds{}) {
+			return nil, status.Error(codes.FailedPrecondition, "insufficient funds")
+		}
+		if errors.As(err, &domain.ErrWalletNotFound{}) {
+			return nil, status.Error(codes.NotFound, "wallet not found")
+		}
+		return nil, status.Error(codes.Internal, "deduct failed")
+	}
+	return &pb.BalanceResponse{UserId: wallet.UserID, BalanceCents: wallet.BalanceCents}, nil
 }
