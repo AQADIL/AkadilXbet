@@ -20,9 +20,9 @@ func Load() *Config {
 		GRPCPort:       getEnv("AUTH_SERVICE_GRPC_PORT", "50051"),
 		PostgresDSN:    buildPostgresDSN(),
 		RedisAddr:      getEnv("REDIS_HOST", "localhost") + ":" + getEnv("REDIS_PORT", "6379"),
-		RedisPassword:  getEnv("REDIS_PASSWORD", ""),
+		RedisPassword:  readSecret("REDIS_PASSWORD"),
 		NatsURL:        getEnv("NATS_URL", "nats://localhost:4222"),
-		JWTSecret:      mustGetEnv("JWT_SECRET"),
+		JWTSecret:      readSecret("JWT_SECRET"),
 		JWTExpiryHours: mustGetEnvInt("JWT_EXPIRY_HOURS", 24),
 	}
 }
@@ -30,8 +30,8 @@ func Load() *Config {
 func buildPostgresDSN() string {
 	host := getEnv("POSTGRES_HOST", "localhost")
 	port := getEnv("POSTGRES_PORT", "5432")
-	user := getEnv("POSTGRES_USER", "akadilxbet")
-	pass := getEnv("POSTGRES_PASSWORD", "")
+	user := readSecret("POSTGRES_USER")
+	pass := readSecret("POSTGRES_PASSWORD")
 	db := getEnv("POSTGRES_DB", "akadilxbet_db")
 	return "postgres://" + user + ":" + pass + "@" + host + ":" + port + "/" + db + "?sslmode=disable"
 }
