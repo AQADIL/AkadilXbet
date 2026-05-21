@@ -7,6 +7,7 @@ import (
 
 type Config struct {
 	GRPCPort       string
+	HTTPPort       string
 	PostgresDSN    string
 	RedisAddr      string
 	RedisPassword  string
@@ -18,6 +19,7 @@ type Config struct {
 func Load() *Config {
 	return &Config{
 		GRPCPort:       getEnv("AUTH_SERVICE_GRPC_PORT", "50051"),
+		HTTPPort:       getEnv("AUTH_SERVICE_HTTP_PORT", "8081"),
 		PostgresDSN:    buildPostgresDSN(),
 		RedisAddr:      getEnv("REDIS_HOST", "localhost") + ":" + getEnv("REDIS_PORT", "6379"),
 		RedisPassword:  readSecret("REDIS_PASSWORD"),

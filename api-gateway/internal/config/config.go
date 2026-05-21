@@ -5,24 +5,26 @@ import (
 )
 
 type Config struct {
-	Port            string
-	NatsURL         string
-	PostgresDSN     string
-	RedisAddr       string
-	RedisPassword   string
-	JWTSecret       string
-	AuthServiceAddr string
+	Port                string
+	NatsURL             string
+	PostgresDSN         string
+	RedisAddr           string
+	RedisPassword       string
+	JWTSecret           string
+	AuthServiceAddr     string
+	AuthServiceHTTPAddr string
 }
 
 func Load() *Config {
 	return &Config{
-		Port:            getEnv("API_GATEWAY_PORT", "8080"),
-		NatsURL:         getEnv("NATS_URL", "nats://localhost:4222"),
-		PostgresDSN:     buildPostgresDSN(),
-		RedisAddr:       getEnv("REDIS_HOST", "localhost") + ":" + getEnv("REDIS_PORT", "6379"),
-		RedisPassword:   getEnv("REDIS_PASSWORD", ""),
-		JWTSecret:       mustGetEnv("JWT_SECRET"),
-		AuthServiceAddr: getEnv("AUTH_SERVICE_HOST", "localhost") + ":" + getEnv("AUTH_SERVICE_GRPC_PORT", "50051"),
+		Port:                getEnv("API_GATEWAY_PORT", "8080"),
+		NatsURL:             getEnv("NATS_URL", "nats://localhost:4222"),
+		PostgresDSN:         buildPostgresDSN(),
+		RedisAddr:           getEnv("REDIS_HOST", "localhost") + ":" + getEnv("REDIS_PORT", "6379"),
+		RedisPassword:       getEnv("REDIS_PASSWORD", ""),
+		JWTSecret:           mustGetEnv("JWT_SECRET"),
+		AuthServiceAddr:     getEnv("AUTH_SERVICE_HOST", "localhost") + ":" + getEnv("AUTH_SERVICE_GRPC_PORT", "50051"),
+		AuthServiceHTTPAddr: getEnv("AUTH_SERVICE_HOST", "localhost") + ":" + getEnv("AUTH_SERVICE_HTTP_PORT", "8081"),
 	}
 }
 

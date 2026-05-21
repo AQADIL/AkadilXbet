@@ -3,6 +3,8 @@ package router
 import (
 	"encoding/json"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 
 	"github.com/akadilxbet/api-gateway/internal/config"
 	"github.com/akadilxbet/api-gateway/internal/middleware"
@@ -13,6 +15,10 @@ func New(cfg *config.Config) http.Handler {
 
 	mux.HandleFunc("GET /health", healthHandler)
 	mux.HandleFunc("GET /ready", readyHandler)
+
+	authTarget, _ := url.Parse("http://" + cfg.AuthServiceHTTPAddr)
+	authProxy := httputil.NewSingleHostReverseProxy(authTarget)
+	mux.Handle("/auth/", authProxy)
 
 	return middleware.Chain(mux,
 		middleware.RequestID,
