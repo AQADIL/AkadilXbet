@@ -19,8 +19,8 @@ func Load() *Config {
 func buildPostgresDSN() string {
 	host := getEnv("POSTGRES_HOST", "localhost")
 	port := getEnv("POSTGRES_PORT", "5432")
-	user := getEnv("POSTGRES_USER", "akadilxbet")
-	pass := getEnv("POSTGRES_PASSWORD", "")
+	user := readSecret("POSTGRES_USER")
+	pass := readSecret("POSTGRES_PASSWORD")
 	db := getEnv("POSTGRES_DB", "akadilxbet_db")
 	return "postgres://" + user + ":" + pass + "@" + host + ":" + port + "/" + db + "?sslmode=disable"
 }
