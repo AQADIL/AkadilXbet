@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "github.com/akadilxbet/auth-service/internal/pb";
+
+service AuthService {
+  rpc Register       (RegisterRequest)       returns (RegisterResponse);
+  rpc Login          (LoginRequest)          returns (LoginResponse);
+  rpc GetUserProfile (GetUserProfileRequest) returns (GetUserProfileResponse);
+}
+
+message RegisterRequest {
+  string email    = 1;
+  string password = 2;
+}
+
+message RegisterResponse {
+  string user_id = 1;
+  string token   = 2;
+}
+
+message LoginRequest {
+  string email    = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string user_id = 1;
+  string token   = 2;
+}
+
+message GetUserProfileRequest {
+  string user_id = 1;
+}
+
+message GetUserProfileResponse {
+  string user_id    = 1;
+  string email      = 2;
+  int64  created_at = 3;
+}
