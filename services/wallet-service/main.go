@@ -9,10 +9,12 @@ import (
 	"syscall"
 
 	"github.com/akadilxbet/wallet-service/internal/config"
+	"github.com/akadilxbet/wallet-service/internal/consumer"
 	deliverygrpc "github.com/akadilxbet/wallet-service/internal/delivery/grpc"
 	"github.com/akadilxbet/wallet-service/internal/repository/postgres"
 	"github.com/akadilxbet/wallet-service/internal/usecase"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/nats-io/nats.go"
 	"google.golang.org/grpc"
 )
 
@@ -31,10 +33,25 @@ func main() {
 	}
 	defer pool.Close()
 
-	userRepo := postgres.NewUserRepo(pool)
+	nc, err := nats.Connect(cfg.NatsURL)
+	if err != nil {
+		slog.Error("failed to connect to nats", "err", err)
+		os.Exit(1)
+	}
+	defer nc.Drain()
+
 	walletRepo := postgres.NewWalletRepo(pool)
-	uc := usecase.NewWalletUseCase(userRepo, walletRepo)
-	_ = deliverygrpc.NewWalletHandler(uc)
+	uc := usecase.NewWalletUseCase(walletRepo)
+
+	sub, err := consumer.NewUserCreatedConsumer(nc, uc).Subscribe()
+	if err != nil {
+		slog.Error("failed to subscribe to nats subject", "err", err)
+		os.Exit(1)
+	}
+	defer sub.Unsubscribe()
+
+	handler := deliverygrpc.NewWalletHandler(uc)
+	_ = handler
 
 	lis, err := net.Listen("tcp", ":"+cfg.GRPCPort)
 	if err != nil {
