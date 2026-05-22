@@ -18,8 +18,8 @@ export const metadata: Metadata = {
   description: "The ultimate interactive betting platform. Sports, live casino, fast games.",
   manifest: "/manifest.json",
   icons: {
-    icon: "/akadilxbet-logo.png",
-    apple: "/akadilxbet-logo.png",
+    icon: "/videos/blackjack/blackjack_logo_trans.png",
+    apple: "/videos/blackjack/blackjack_logo_trans.png",
   },
   appleWebApp: {
     capable: true,
@@ -50,8 +50,8 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full`}
     >
       <head>
-        <link rel="icon" href="/akadilxbet-logo.png" />
-        <link rel="apple-touch-icon" href="/akadilxbet-logo.png" />
+        <link rel="icon" href="/videos/blackjack/blackjack_logo_trans.png" />
+        <link rel="apple-touch-icon" href="/videos/blackjack/blackjack_logo_trans.png" />
       </head>
       <body className="min-h-full bg-[#08140C] text-[#f0fdf4] antialiased">
         <AuthProvider>{children}</AuthProvider>
