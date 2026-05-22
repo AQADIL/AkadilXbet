@@ -1,4 +1,3 @@
-import Link from "next/link";
 import MobileShell from "@/components/layout/MobileShell";
 import Link from "next/link";
 
@@ -59,71 +58,51 @@ const GAMES = [
     gradient: "from-yellow-950/60 to-surface-raised/80",
     glow: "shadow-yellow-900/30",
   },
+  {
+    href: "/fast-games/mines",
+    name: "Mines",
+    tagline: "Open safe cells and cashout before hitting a mine",
+    badge: "RISK",
+    badgeColor: "text-orange-400 border-orange-400/40 bg-orange-400/10",
+    icon: (
+      <svg viewBox="0 0 48 48" fill="none" className="w-10 h-10">
+        <circle cx="24" cy="24" r="14" fill="#1a3d22" stroke="#4ade80" strokeWidth="1.5" opacity="0.8"/>
+        <circle cx="24" cy="24" r="7" fill="#4ade80" opacity="0.7"/>
+        <line x1="24" y1="6" x2="24" y2="10" stroke="#4ade80" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="24" y1="38" x2="24" y2="42" stroke="#4ade80" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="6" y1="24" x2="10" y2="24" stroke="#4ade80" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="38" y1="24" x2="42" y2="24" stroke="#4ade80" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="11" y1="11" x2="14" y2="14" stroke="#4ade80" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="34" y1="34" x2="37" y2="37" stroke="#4ade80" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="37" y1="11" x2="34" y2="14" stroke="#4ade80" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="14" y1="34" x2="11" y2="37" stroke="#4ade80" strokeWidth="2" strokeLinecap="round"/>
+      </svg>
+    ),
+    gradient: "from-orange-950/60 to-surface-raised/80",
+    glow: "shadow-orange-900/30",
+  },
+  {
+    href: "/fast-games/dice",
+    name: "Higher Lower",
+    tagline: "Predict high or low — higher roll wins x2 payout",
+    badge: "x2",
+    badgeColor: "text-blue-400 border-blue-400/40 bg-blue-400/10",
+    icon: (
+      <svg viewBox="0 0 48 48" fill="none" className="w-10 h-10">
+        <rect x="6" y="6" width="36" height="36" rx="7" fill="#1a2a3d" stroke="#4ade80" strokeWidth="1.5" opacity="0.8"/>
+        <circle cx="15" cy="15" r="3" fill="#4ade80" opacity="0.9"/>
+        <circle cx="33" cy="15" r="3" fill="#4ade80" opacity="0.9"/>
+        <circle cx="15" cy="33" r="3" fill="#4ade80" opacity="0.9"/>
+        <circle cx="33" cy="33" r="3" fill="#4ade80" opacity="0.9"/>
+        <circle cx="24" cy="24" r="3" fill="#4ade80" opacity="0.9"/>
+      </svg>
+    ),
+    gradient: "from-blue-950/60 to-surface-raised/80",
+    glow: "shadow-blue-900/30",
+  },
 ] as const;
 
-const games = [
-    {
-        title: "Mines",
-        href: "/fast-games/mines",
-        emoji: "💣",
-        description: "Open safe cells and cashout before hitting a mine.",
-    },
-    {
-        title: "Higher Lower",
-        href: "/fast-games/dice",
-        emoji: "🎲",
-        description: "Predict high or low. Higher roll wins x2 payout.",
-    },
-];
-
 export default function FastGamesPage() {
-<<<<<<< ours
-    return (
-        <MobileShell>
-            <div className="min-h-[calc(100svh-4rem)] px-4 py-6">
-                <p className="text-xs uppercase tracking-[0.3em] text-green-400/70">
-                    AkadilXbet
-                </p>
-
-                <h1 className="mt-1 text-4xl font-black text-white">Fast Games</h1>
-
-                <p className="mt-2 text-sm text-white/40">
-                    Choose a quick game and start playing.
-                </p>
-
-                <div className="mt-6 grid gap-4">
-                    {games.map((game) => (
-                        <Link
-                            key={game.title}
-                            href={game.href}
-                            className="group rounded-[28px] border border-white/10 bg-white/[0.04] p-5 shadow-2xl backdrop-blur-xl transition hover:border-green-400/40 hover:bg-green-400/10"
-                        >
-                            <div className="flex items-center gap-4">
-                                <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-black/40 text-4xl shadow-lg">
-                                    {game.emoji}
-                                </div>
-
-                                <div className="flex-1">
-                                    <h2 className="text-2xl font-black text-white">
-                                        {game.title}
-                                    </h2>
-                                    <p className="mt-1 text-sm text-white/40">
-                                        {game.description}
-                                    </p>
-                                </div>
-
-                                <span className="text-2xl text-green-400 transition group-hover:translate-x-1">
-                  →
-                </span>
-                            </div>
-                        </Link>
-                    ))}
-                </div>
-            </div>
-        </MobileShell>
-    );
-}
-=======
   return (
     <MobileShell>
       <div className="px-4 pt-8 pb-4">
@@ -162,4 +141,3 @@ export default function FastGamesPage() {
     </MobileShell>
   );
 }
->>>>>>> theirs
