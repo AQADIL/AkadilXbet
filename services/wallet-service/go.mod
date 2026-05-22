@@ -3,10 +3,13 @@ module github.com/akadilxbet/wallet-service
 go 1.23
 
 require (
+	github.com/AQADIL/akadilxbet-protos v0.0.0
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/nats-io/nats.go v1.38.0
 	google.golang.org/grpc v1.71.0
 )
+
+replace github.com/AQADIL/akadilxbet-protos => ../../akadilxbet-protos
 
 require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
