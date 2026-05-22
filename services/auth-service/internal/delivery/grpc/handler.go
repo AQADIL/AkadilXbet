@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
+	authpb "github.com/AQADIL/akadilxbet-protos/pb/auth"
 	"github.com/akadilxbet/auth-service/internal/domain"
-	"github.com/akadilxbet/auth-service/internal/pb"
 	"github.com/akadilxbet/auth-service/internal/usecase"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -19,7 +19,7 @@ func NewAuthHandler(uc *usecase.AuthUseCase) *AuthHandler {
 	return &AuthHandler{uc: uc}
 }
 
-func (h *AuthHandler) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
+func (h *AuthHandler) Register(ctx context.Context, req *authpb.RegisterRequest) (*authpb.RegisterResponse, error) {
 	if req.Email == "" || req.Password == "" {
 		return nil, status.Error(codes.InvalidArgument, "email and password are required")
 	}
@@ -32,10 +32,10 @@ func (h *AuthHandler) Register(ctx context.Context, req *pb.RegisterRequest) (*p
 		return nil, status.Error(codes.Internal, "registration failed")
 	}
 
-	return &pb.RegisterResponse{UserId: userID, Token: token}, nil
+	return &authpb.RegisterResponse{UserId: userID, Token: token}, nil
 }
 
-func (h *AuthHandler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
+func (h *AuthHandler) Login(ctx context.Context, req *authpb.LoginRequest) (*authpb.LoginResponse, error) {
 	if req.Email == "" || req.Password == "" {
 		return nil, status.Error(codes.InvalidArgument, "email and password are required")
 	}
@@ -48,10 +48,10 @@ func (h *AuthHandler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Logi
 		return nil, status.Error(codes.Internal, "login failed")
 	}
 
-	return &pb.LoginResponse{UserId: userID, Token: token}, nil
+	return &authpb.LoginResponse{UserId: userID, Token: token}, nil
 }
 
-func (h *AuthHandler) GetUserProfile(ctx context.Context, req *pb.GetUserProfileRequest) (*pb.GetUserProfileResponse, error) {
+func (h *AuthHandler) GetUserProfile(ctx context.Context, req *authpb.GetUserProfileRequest) (*authpb.GetUserProfileResponse, error) {
 	if req.UserId == "" {
 		return nil, status.Error(codes.InvalidArgument, "user_id is required")
 	}
@@ -64,7 +64,7 @@ func (h *AuthHandler) GetUserProfile(ctx context.Context, req *pb.GetUserProfile
 		return nil, status.Error(codes.Internal, "failed to get profile")
 	}
 
-	return &pb.GetUserProfileResponse{
+	return &authpb.GetUserProfileResponse{
 		UserId:    user.ID,
 		Email:     user.Email,
 		CreatedAt: user.CreatedAt.Unix(),
