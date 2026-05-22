@@ -6,6 +6,7 @@ import Link from "next/link";
 import MobileShell from "@/components/layout/MobileShell";
 import { authFetch, getUser } from "@/lib/auth";
 import { useBalance } from "@/hooks/useBalance";
+import { WalletDTO } from "@/lib/auth";
 
 const BET_PRESETS = [10, 25, 50, 100];
 
@@ -163,13 +164,15 @@ export default function ScratchPage() {
   const isLoggedIn = !!getUser();
   const balance = isLoggedIn ? (backendBalance ?? 0) : localBalance.balance;
 
-  useEffect(() => {
+  const fetchWallet = useCallback(() => {
     if (!isLoggedIn) return;
-    authFetch("/api/scratch/balance")
+    authFetch("/api/auth/wallet")
       .then((r) => r.json())
-      .then((d) => setBackendBalance(d.balance_credits ?? 0))
+      .then((d: WalletDTO) => setBackendBalance(Math.floor(d.balance_cents / 100)))
       .catch(() => {});
   }, [isLoggedIn]);
+
+  useEffect(() => { fetchWallet(); }, [fetchWallet]);
 
   const startScratch = async () => {
     const bet = Math.min(betAmount, balance);
@@ -201,7 +204,8 @@ export default function ScratchPage() {
       setWinLine(d.win_line?.length ? d.win_line : null);
       setWinMult(d.win_multiplier ?? 0);
       setPayout(d.payout_credits ?? 0);
-      setBackendBalance(d.new_balance_credits);
+      if (d.new_balance_credits != null) setBackendBalance(d.new_balance_credits);
+      else fetchWallet();
       setRevealedCount(0); setAllRevealed(false);
       setPhase("SCRATCHING");
     } catch { setError("Network error"); }

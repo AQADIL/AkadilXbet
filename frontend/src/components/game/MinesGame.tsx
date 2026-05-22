@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
+import { authFetch, getUser, WalletDTO } from "@/lib/auth";
+import { useBalance } from "@/hooks/useBalance";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
@@ -18,6 +20,21 @@ type MinesHistoryItem = {
 };
 
 export default function MinesGame() {
+    const localBalance = useBalance();
+    const [backendBalance, setBackendBalance] = useState<number | null>(null);
+    const isLoggedIn = !!getUser();
+    const balance = isLoggedIn ? (backendBalance ?? 0) : localBalance.balance;
+
+    const fetchWallet = useCallback(() => {
+        if (!isLoggedIn) return;
+        authFetch("/api/auth/wallet")
+            .then((r) => r.json())
+            .then((d: WalletDTO) => setBackendBalance(Math.floor(d.balance_cents / 100)))
+            .catch(() => {});
+    }, [isLoggedIn]);
+
+    useEffect(() => { fetchWallet(); }, [fetchWallet]);
+
     const [bet, setBet] = useState(100);
     const [mineCount, setMineCount] = useState(3);
     const [gameId, setGameId] = useState<string | null>(null);
@@ -32,13 +49,13 @@ export default function MinesGame() {
     }, [openedSafe, mineCount]);
 
     const startGame = async () => {
-        const res = await fetch(`${API_BASE_URL}/api/games/mines/start`, {
+        if (bet > balance || bet <= 0) return;
+        const user = getUser();
+        const res = await authFetch(`${API_BASE_URL}/api/games/mines/start`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                user_id: "1",
+                user_id: user?.userId ?? "1",
                 bet_amount: bet,
                 mines: mineCount,
             }),
@@ -65,15 +82,10 @@ export default function MinesGame() {
         const cell = cells.find((c) => c.id === id);
         if (!cell || cell.opened) return;
 
-        const res = await fetch(`${API_BASE_URL}/api/games/mines/open`, {
+        const res = await authFetch(`${API_BASE_URL}/api/games/mines/open`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                game_id: gameId,
-                cell: id,
-            }),
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ game_id: gameId, cell: id }),
         });
 
         const data = await res.json();
@@ -94,6 +106,7 @@ export default function MinesGame() {
                 ...prev.slice(0, 4),
             ]);
 
+            fetchWallet();
             setStatus("lost");
             return;
         }
@@ -108,14 +121,10 @@ export default function MinesGame() {
     const cashout = async () => {
         if (status !== "playing" || openedSafe === 0 || !gameId) return;
 
-        const res = await fetch(`${API_BASE_URL}/api/games/mines/cashout`, {
+        const res = await authFetch(`${API_BASE_URL}/api/games/mines/cashout`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                game_id: gameId,
-            }),
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ game_id: gameId }),
         });
 
         const data = await res.json();
@@ -130,6 +139,7 @@ export default function MinesGame() {
         ]);
 
         setStatus(data.status);
+        fetchWallet();
     };
 
     const previewCells = Array.from({ length: 25 }, (_, id) => ({
@@ -148,11 +158,14 @@ export default function MinesGame() {
                     <h2 className="text-3xl font-black text-white">Mines</h2>
                 </div>
 
-                <div className="rounded-2xl bg-black/40 px-4 py-2 text-right">
-                    <p className="text-xs text-white/40">Multiplier</p>
-                    <p className="text-xl font-bold text-green-400">
-                        x{multiplier.toFixed(2)}
-                    </p>
+                <div className="flex flex-col items-end gap-1">
+                    <div className="rounded-2xl bg-black/40 px-4 py-2 text-right">
+                        <p className="text-xs text-white/40">Multiplier</p>
+                        <p className="text-xl font-bold text-green-400">
+                            x{multiplier.toFixed(2)}
+                        </p>
+                    </div>
+                    <p className="text-xs font-bold text-yellow-400">{balance} cr</p>
                 </div>
             </div>
 

@@ -4,7 +4,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import MobileShell from "@/components/layout/MobileShell";
-import { authFetch, getUser } from "@/lib/auth";
+import { authFetch, getUser, WalletDTO } from "@/lib/auth";
 import { useBalance } from "@/hooks/useBalance";
 
 const BET_PRESETS = [10, 25, 50, 100, 200];
@@ -105,13 +105,15 @@ export default function SlotsPage() {
   const isLoggedIn = !!getUser();
   const balance = isLoggedIn ? (backendBalance ?? 0) : localBalance.balance;
 
-  useEffect(() => {
+  const fetchWallet = useCallback(() => {
     if (!isLoggedIn) return;
-    authFetch("/api/slots/balance")
+    authFetch("/api/auth/wallet")
       .then((r) => r.json())
-      .then((d) => setBackendBalance(d.balance_credits ?? 0))
+      .then((d: WalletDTO) => setBackendBalance(Math.floor(d.balance_cents / 100)))
       .catch(() => {});
   }, [isLoggedIn]);
+
+  useEffect(() => { fetchWallet(); }, [fetchWallet]);
 
   const onReelStop = useCallback(() => {
     stoppedRef.current += 1;
@@ -151,7 +153,8 @@ export default function SlotsPage() {
       setFinalSymbols(d.reels as [number, number, number]);
       setWinMult(d.multiplier ?? 0);
       setPayout(d.payout_credits ?? 0);
-      setBackendBalance(d.new_balance_credits);
+      if (d.new_balance_credits != null) setBackendBalance(d.new_balance_credits);
+      else fetchWallet();
       setPhase("SPINNING");
     } catch { setError("Network error"); }
     finally { setLoading(false); }

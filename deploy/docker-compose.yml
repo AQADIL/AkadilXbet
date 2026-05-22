@@ -77,7 +77,7 @@ services:
     restart: unless-stopped
 
   pgadmin:
-    image: dpage/pgadmin4:latest
+    image: dpage/pgadmin4:8
     platform: linux/amd64
     container_name: akadilxbet_pgadmin
     environment:
