@@ -27,6 +27,14 @@ func New(cfg *config.Config) http.Handler {
 	authProxy := httputil.NewSingleHostReverseProxy(authTarget)
 	mux.Handle("/auth/", authProxy)
 
+	scratchTarget, _ := url.Parse("http://" + cfg.ScratchServiceAddr)
+	scratchProxy := httputil.NewSingleHostReverseProxy(scratchTarget)
+	mux.Handle("/scratch/", scratchProxy)
+
+	slotsTarget, _ := url.Parse("http://" + cfg.SlotsServiceAddr)
+	slotsProxy := httputil.NewSingleHostReverseProxy(slotsTarget)
+	mux.Handle("/slots/", slotsProxy)
+
 	return middleware.Chain(mux,
 		middleware.RequestID,
 		middleware.Logger,
