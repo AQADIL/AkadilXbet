@@ -17,6 +17,10 @@ export const metadata: Metadata = {
   title: "AkadilXbet — Bet Smart. Win Big.",
   description: "The ultimate interactive betting platform. Sports, live casino, fast games.",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/akadilxbet-logo.png",
+    apple: "/akadilxbet-logo.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
