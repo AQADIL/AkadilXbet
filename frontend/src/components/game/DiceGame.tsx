@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+
 type DiceHistoryItem = {
     dice: number;
     result: "won" | "lost";
@@ -19,7 +21,7 @@ export default function DiceGame() {
         setStatus("rolling");
 
         try {
-            const res = await fetch("http://localhost:8080/api/games/dice/play", {
+            const res = await fetch(`${API_BASE_URL}/api/games/dice/play`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -58,7 +60,7 @@ export default function DiceGame() {
                     <p className="text-xs uppercase tracking-[0.3em] text-green-400/70">
                         Fast Game
                     </p>
-                    <h2 className="text-3xl font-black text-white">Dice</h2>
+                    <h2 className="text-3xl font-black text-white">Higher Lower</h2>
                 </div>
 
                 <div className="rounded-2xl bg-black/40 px-4 py-2 text-right">
@@ -88,7 +90,7 @@ export default function DiceGame() {
                 </motion.div>
 
                 <p className="mt-4 text-sm text-white/50">
-                    Roll 4, 5 or 6 to win x2
+                    Predict higher outcomes: 4, 5 or 6 wins x2
                 </p>
             </div>
 
@@ -107,7 +109,7 @@ export default function DiceGame() {
                 disabled={status === "rolling"}
                 className="w-full rounded-2xl bg-green-400 py-3 font-black text-black disabled:opacity-50"
             >
-                {status === "rolling" ? "Rolling..." : "Roll Dice"}
+                {status === "rolling" ? "Rolling..." : "Play Higher Lower"}
             </button>
 
             {status === "won" && (
@@ -125,7 +127,7 @@ export default function DiceGame() {
             {history.length > 0 && (
                 <div className="mt-4 rounded-2xl bg-black/30 p-3">
                     <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/40">
-                        Recent Rolls
+                        Recent Rounds
                     </p>
 
                     <div className="space-y-2">

@@ -9,10 +9,10 @@ const games = [
         description: "Open safe cells and cashout before hitting a mine.",
     },
     {
-        title: "Dice",
+        title: "Higher Lower",
         href: "/fast-games/dice",
         emoji: "🎲",
-        description: "Roll the dice. 4, 5 or 6 gives x2 payout.",
+        description: "Predict high or low. Higher roll wins x2 payout.",
     },
 ];
 

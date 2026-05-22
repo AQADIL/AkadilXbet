@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+
 type Cell = {
     id: number;
     isMine: boolean;
@@ -30,7 +32,7 @@ export default function MinesGame() {
     }, [openedSafe, mineCount]);
 
     const startGame = async () => {
-        const res = await fetch("http://localhost:8080/api/games/mines/start", {
+        const res = await fetch(`${API_BASE_URL}/api/games/mines/start`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -63,7 +65,7 @@ export default function MinesGame() {
         const cell = cells.find((c) => c.id === id);
         if (!cell || cell.opened) return;
 
-        const res = await fetch("http://localhost:8080/api/games/mines/open", {
+        const res = await fetch(`${API_BASE_URL}/api/games/mines/open`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -106,7 +108,7 @@ export default function MinesGame() {
     const cashout = async () => {
         if (status !== "playing" || openedSafe === 0 || !gameId) return;
 
-        const res = await fetch("http://localhost:8080/api/games/mines/cashout", {
+        const res = await fetch(`${API_BASE_URL}/api/games/mines/cashout`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
