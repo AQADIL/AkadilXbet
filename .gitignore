@@ -23,6 +23,7 @@ out/
 
 .DS_Store
 Thumbs.db
+.idea/
 
 *.pb.go
 !**/*.pb.go

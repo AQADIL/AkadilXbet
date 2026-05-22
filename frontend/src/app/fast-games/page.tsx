@@ -1,6 +1,6 @@
 import Link from "next/link";
 import MobileShell from "@/components/layout/MobileShell";
-import { Plane, Circle } from "lucide-react";
+import { Plane, Circle, Bomb, Dices } from "lucide-react";
 
 const GAMES = [
   {
@@ -16,6 +16,20 @@ const GAMES = [
     desc: "Hold to pump · release to win",
     icon: Circle,
     accent: "from-brand-glow/15 to-transparent",
+  },
+  {
+    href: "/fast-games/mines",
+    title: "Mines",
+    desc: "Open safe cells · cash out before mine",
+    icon: Bomb,
+    accent: "from-red-500/20 to-transparent",
+  },
+  {
+    href: "/fast-games/dice",
+    title: "Higher Lower",
+    desc: "Predict high or low · x2 payout",
+    icon: Dices,
+    accent: "from-blue-500/20 to-transparent",
   },
 ] as const;
 

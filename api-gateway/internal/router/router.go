@@ -23,6 +23,12 @@ func New(cfg *config.Config) http.Handler {
 	mux.Handle("/api/v1/aviator/", aviatorProxy)
 	mux.Handle("/api/v1/balloon/", balloonProxy)
 
+	// Game routes
+	mux.HandleFunc("POST /api/games/dice/play", dicePlayHandler)
+	mux.HandleFunc("POST /api/games/mines/start", minesStartHandler)
+	mux.HandleFunc("POST /api/games/mines/open", minesOpenHandler)
+	mux.HandleFunc("POST /api/games/mines/cashout", minesCashoutHandler)
+
 	// Auth service proxy
 	authTarget, _ := url.Parse("http://" + cfg.AuthServiceHTTPAddr)
 	authProxy := httputil.NewSingleHostReverseProxy(authTarget)
