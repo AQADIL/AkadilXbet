@@ -10,7 +10,7 @@ secrets/
 *.dylib
 *.test
 *.out
-
+.idea
 vendor/
 dist/
 build/
@@ -30,3 +30,4 @@ Thumbs.db
 *.pem
 *.key
 *.crt
+settings.local.json

@@ -143,6 +143,50 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  scratch-service:
+    build:
+      context: ../services/scratch-service
+      dockerfile: Dockerfile
+    container_name: akadilxbet_scratch
+    environment:
+      SCRATCH_SERVICE_PORT: ${SCRATCH_SERVICE_PORT}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      JWT_SECRET: ${JWT_SECRET}
+    ports:
+      - "${SCRATCH_SERVICE_PORT}:${SCRATCH_SERVICE_PORT}"
+    networks:
+      - akadilxbet_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  slots-service:
+    build:
+      context: ../services/slots-service
+      dockerfile: Dockerfile
+    container_name: akadilxbet_slots
+    environment:
+      SLOTS_SERVICE_PORT: ${SLOTS_SERVICE_PORT}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      JWT_SECRET: ${JWT_SECRET}
+    ports:
+      - "${SLOTS_SERVICE_PORT}:${SLOTS_SERVICE_PORT}"
+    networks:
+      - akadilxbet_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
   api-gateway:
     build:
       context: ../api-gateway
@@ -151,7 +195,13 @@ services:
     environment:
       API_GATEWAY_PORT: ${API_GATEWAY_PORT}
       AUTH_SERVICE_ADDR: auth-service:${AUTH_SERVICE_GRPC_PORT}
+      AUTH_SERVICE_HOST: auth-service
+      AUTH_SERVICE_HTTP_PORT: "8081"
       WALLET_SERVICE_ADDR: wallet-service:${WALLET_SERVICE_GRPC_PORT}
+      SCRATCH_SERVICE_HOST: scratch-service
+      SCRATCH_SERVICE_PORT: ${SCRATCH_SERVICE_PORT}
+      SLOTS_SERVICE_HOST: slots-service
+      SLOTS_SERVICE_PORT: ${SLOTS_SERVICE_PORT}
       NATS_URL: nats://nats:4222
       JWT_SECRET: ${JWT_SECRET}
     ports:
@@ -161,5 +211,7 @@ services:
     depends_on:
       - auth-service
       - wallet-service
+      - scratch-service
+      - slots-service
     restart: unless-stopped
 
