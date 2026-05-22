@@ -3,22 +3,26 @@ package config
 import "os"
 
 type Config struct {
-	Port        string
-	PostgresDSN string
-	JWTSecret   string
-	NatsURL     string
+	Port            string
+	PostgresDSN     string
+	NatsURL         string
+	VAPIDPublicKey  string
+	VAPIDPrivateKey string
+	Subject         string
 }
 
 func Load() *Config {
 	return &Config{
-		Port:        getEnv("SLOTS_SERVICE_PORT", "8083"),
-		PostgresDSN: buildDSN(),
-		JWTSecret:   mustGetEnv("JWT_SECRET"),
-		NatsURL:     getEnv("NATS_URL", "nats://localhost:4222"),
+		Port:            getEnv("PUSH_SERVICE_PORT", "8086"),
+		PostgresDSN:     buildPostgresDSN(),
+		NatsURL:         getEnv("NATS_URL", "nats://localhost:4222"),
+		VAPIDPublicKey:  getEnv("VAPID_PUBLIC_KEY", ""),
+		VAPIDPrivateKey: getEnv("VAPID_PRIVATE_KEY", ""),
+		Subject:         getEnv("VAPID_SUBJECT", "mailto:admin@akadilxbet.com"),
 	}
 }
 
-func buildDSN() string {
+func buildPostgresDSN() string {
 	host := getEnv("POSTGRES_HOST", "localhost")
 	port := getEnv("POSTGRES_PORT", "5432")
 	user := getEnv("POSTGRES_USER", "akadilxbet")
@@ -32,12 +36,4 @@ func getEnv(key, fallback string) string {
 		return v
 	}
 	return fallback
-}
-
-func mustGetEnv(key string) string {
-	v := os.Getenv(key)
-	if v == "" {
-		panic("required env var not set: " + key)
-	}
-	return v
 }

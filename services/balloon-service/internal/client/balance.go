@@ -2,49 +2,67 @@ package client
 
 import (
 	"context"
-	"errors"
+	"log/slog"
 
-	goredis "github.com/redis/go-redis/v9"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-const defaultBalanceCents = 100_000
-
-type BalanceStore struct {
-	rdb *goredis.Client
+type WalletClient struct {
+	db *pgxpool.Pool
 }
 
-func NewBalanceStore(rdb *goredis.Client) *BalanceStore {
-	return &BalanceStore{rdb: rdb}
+func NewWalletClient(db *pgxpool.Pool) *WalletClient {
+	return &WalletClient{db: db}
 }
 
-func balanceKey(userID string) string { return "balloon:balance:" + userID }
-
-func (s *BalanceStore) Get(ctx context.Context, userID string) (int64, error) {
-	v, err := s.rdb.Get(ctx, balanceKey(userID)).Int64()
-	if errors.Is(err, goredis.Nil) {
-		_ = s.rdb.Set(ctx, balanceKey(userID), defaultBalanceCents, 0)
-		return defaultBalanceCents, nil
-	}
-	return v, err
-}
-
-func (s *BalanceStore) Deduct(ctx context.Context, userID string, amount int64) (int64, error) {
-	bal, err := s.Get(ctx, userID)
+func (w *WalletClient) GetBalance(ctx context.Context, userID string) (int64, error) {
+	var balanceCents int64
+	err := w.db.QueryRow(ctx, "SELECT balance_cents FROM wallets WHERE user_id = $1", userID).Scan(&balanceCents)
 	if err != nil {
 		return 0, err
 	}
-	if bal < amount {
-		return 0, errors.New("insufficient funds")
-	}
-	newBal := bal - amount
-	return newBal, s.rdb.Set(ctx, balanceKey(userID), newBal, 0).Err()
+	return balanceCents, nil
 }
 
-func (s *BalanceStore) Deposit(ctx context.Context, userID string, amount int64) (int64, error) {
-	bal, err := s.Get(ctx, userID)
+func (w *WalletClient) Deduct(ctx context.Context, userID string, amountCents int64, description string) (int64, error) {
+	var newBalance int64
+	err := w.db.QueryRow(ctx,
+		`UPDATE wallets SET balance_cents = balance_cents - $1, updated_at = NOW()
+		 WHERE user_id = $2 AND balance_cents >= $1
+		 RETURNING balance_cents`,
+		amountCents, userID,
+	).Scan(&newBalance)
 	if err != nil {
 		return 0, err
 	}
-	newBal := bal + amount
-	return newBal, s.rdb.Set(ctx, balanceKey(userID), newBal, 0).Err()
+
+	_, _ = w.db.Exec(ctx,
+		`INSERT INTO wallet_transactions (id, user_id, type, amount_cents, description, created_at)
+		 VALUES (gen_random_uuid(), $1, 'bet', $2, $3, NOW())`,
+		userID, amountCents, description,
+	)
+
+	return newBalance, nil
+}
+
+func (w *WalletClient) Deposit(ctx context.Context, userID string, amountCents int64, description string) (int64, error) {
+	var newBalance int64
+	err := w.db.QueryRow(ctx,
+		`UPDATE wallets SET balance_cents = balance_cents + $1, updated_at = NOW()
+		 WHERE user_id = $2
+		 RETURNING balance_cents`,
+		amountCents, userID,
+	).Scan(&newBalance)
+	if err != nil {
+		slog.Error("failed to deposit", "err", err)
+		return 0, err
+	}
+
+	_, _ = w.db.Exec(ctx,
+		`INSERT INTO wallet_transactions (id, user_id, type, amount_cents, description, created_at)
+		 VALUES (gen_random_uuid(), $1, 'win', $2, $3, NOW())`,
+		userID, amountCents, description,
+	)
+
+	return newBalance, nil
 }

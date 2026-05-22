@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"math"
+	"strconv"
 	"sync"
 	"time"
 
@@ -18,7 +19,7 @@ import (
 
 type BalloonUseCase struct {
 	sessions  *postgres.SessionRepo
-	balance   *client.BalanceStore
+	wallet    *client.WalletClient
 	publisher *messaging.Publisher
 	cfg       *config.Config
 
@@ -29,13 +30,13 @@ type BalloonUseCase struct {
 
 func NewBalloonUseCase(
 	sessions *postgres.SessionRepo,
-	balance *client.BalanceStore,
+	wallet *client.WalletClient,
 	publisher *messaging.Publisher,
 	cfg *config.Config,
 ) *BalloonUseCase {
 	return &BalloonUseCase{
 		sessions:  sessions,
-		balance:   balance,
+		wallet:    wallet,
 		publisher: publisher,
 		cfg:       cfg,
 		active:    make(map[string]*domain.Session),
@@ -65,7 +66,7 @@ func (uc *BalloonUseCase) PlaceBet(ctx context.Context, userID string, amount in
 	if existing, _ := uc.sessions.GetActiveByUser(ctx, userID); existing != nil {
 		return nil, 0, errors.New("session already active")
 	}
-	bal, err := uc.balance.Deduct(ctx, userID, amount)
+	bal, err := uc.wallet.Deduct(ctx, userID, amount, "Balloon bet")
 	if err != nil {
 		return nil, 0, err
 	}
@@ -74,7 +75,7 @@ func (uc *BalloonUseCase) PlaceBet(ctx context.Context, userID string, amount in
 		BetAmountCents: amount, CurrentMultiplier: 1.0, StartedAt: time.Now(),
 	}
 	if err := uc.sessions.Create(ctx, s); err != nil {
-		_, _ = uc.balance.Deposit(ctx, userID, amount)
+		_, _ = uc.wallet.Deposit(ctx, userID, amount, "Balloon bet refund")
 		return nil, 0, err
 	}
 	uc.mu.Lock()
@@ -121,13 +122,15 @@ func (uc *BalloonUseCase) Release(ctx context.Context, userID string) (*domain.S
 	now := time.Now()
 	s.EndedAt = &now
 	_ = uc.sessions.Update(ctx, s)
-	bal, err := uc.balance.Deposit(ctx, userID, payout)
+	bal, err := uc.wallet.Deposit(ctx, userID, payout, "Balloon win")
 	if err != nil {
 		return nil, 0, err
 	}
 	bankrtp.RecordDelta(-(payout - s.BetAmountCents))
 	uc.clearActive(userID)
 	_ = uc.publisher.Publish(messaging.SubjectSessionEnded, map[string]any{"session_id": s.ID, "won": true})
+	// Send push notification for win
+	_ = uc.publisher.Publish("notification.send", []byte(`{"user_id":"`+userID+`","title":"Balloon win!","body":"You won at `+strconv.FormatFloat(s.CurrentMultiplier, 'f', 2, 64)+`x","tag":"win"}`))
 	return s, bal, nil
 }
 
@@ -151,7 +154,7 @@ func (uc *BalloonUseCase) AbortSession(ctx context.Context, userID string) (*dom
 	now := time.Now()
 	s.EndedAt = &now
 	_ = uc.sessions.Update(ctx, s)
-	_, _ = uc.balance.Deposit(ctx, userID, s.BetAmountCents)
+	_, _ = uc.wallet.Deposit(ctx, userID, s.BetAmountCents, "Balloon refund")
 	uc.clearActive(userID)
 	return s, nil
 }

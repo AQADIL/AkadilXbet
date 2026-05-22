@@ -28,3 +28,8 @@ func (p *Publisher) PublishUserCreated(userID, email string) error {
 	}
 	return p.nc.Publish(SubjectUserCreated, payload)
 }
+
+func (p *Publisher) PublishNotification(userID, title, body, tag string) error {
+	payload := []byte(`{"user_id":"` + userID + `","title":"` + title + `","body":"` + body + `","tag":"` + tag + `"}`)
+	return p.nc.Publish("notification.send", payload)
+}

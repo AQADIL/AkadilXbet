@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"math"
+	"strconv"
 	"sync"
 	"time"
 
@@ -19,7 +20,7 @@ type AviatorUseCase struct {
 	rounds    repository.RoundRepository
 	bets      repository.BetRepository
 	cache     repository.RoundCache
-	balance   *client.BalanceStore
+	wallet    *client.WalletClient
 	publisher *messaging.Publisher
 	cfg       *config.Config
 
@@ -32,7 +33,7 @@ func NewAviatorUseCase(
 	rounds repository.RoundRepository,
 	bets repository.BetRepository,
 	cache repository.RoundCache,
-	balance *client.BalanceStore,
+	wallet *client.WalletClient,
 	publisher *messaging.Publisher,
 	cfg *config.Config,
 ) *AviatorUseCase {
@@ -40,7 +41,7 @@ func NewAviatorUseCase(
 		rounds:    rounds,
 		bets:      bets,
 		cache:     cache,
-		balance:   balance,
+		wallet:    wallet,
 		publisher: publisher,
 		cfg:       cfg,
 	}
@@ -154,7 +155,7 @@ func (uc *AviatorUseCase) PlaceBet(ctx context.Context, userID string, amountCen
 	if round.Status != domain.RoundWaiting {
 		return nil, 0, domain.ErrBetClosed
 	}
-	bal, err := uc.balance.Deduct(ctx, userID, amountCents)
+	bal, err := uc.wallet.Deduct(ctx, userID, amountCents, "Aviator bet")
 	if err != nil {
 		return nil, 0, domain.ErrInsufficientFunds
 	}
@@ -166,7 +167,7 @@ func (uc *AviatorUseCase) PlaceBet(ctx context.Context, userID string, amountCen
 		Status:      domain.BetActive,
 	}
 	if err := uc.bets.Create(ctx, bet); err != nil {
-		_, _ = uc.balance.Deposit(ctx, userID, amountCents)
+		_, _ = uc.wallet.Deposit(ctx, userID, amountCents, "Aviator bet refund")
 		return nil, 0, err
 	}
 	round.TotalBetCents += amountCents
@@ -203,10 +204,13 @@ func (uc *AviatorUseCase) CashOut(ctx context.Context, userID, betID string, atM
 	bet.CashoutMultiplier = atMult
 	bet.PayoutCents = payout
 	_ = uc.bets.Update(ctx, bet)
-	bal, err := uc.balance.Deposit(ctx, userID, payout)
+	bal, err := uc.wallet.Deposit(ctx, userID, payout, "Aviator cashout")
 	if err != nil {
 		return nil, 0, err
 	}
+
+	// Send push notification for win
+	_ = uc.publisher.Publish("notification.send", []byte(`{"user_id":"`+userID+`","title":"Aviator win!","body":"You cashed out at `+strconv.FormatFloat(atMult, 'f', 2, 64)+`x","tag":"win"}`))
 	bankrtp.RecordDelta(-(payout - bet.AmountCents))
 	_ = uc.publisher.Publish(messaging.SubjectBetSettled, map[string]any{
 		"bet_id": bet.ID, "payout": payout,

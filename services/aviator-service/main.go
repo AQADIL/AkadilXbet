@@ -50,9 +50,9 @@ func main() {
 	roundRepo := postgres.NewRoundRepo(db)
 	betRepo := postgres.NewBetRepo(db)
 	roundCache := redisrepo.NewRoundCache(rdb)
-	balance := client.NewBalanceStore(rdb)
+	wallet := client.NewWalletClient(db)
 	publisher := messaging.NewPublisher(nc)
-	uc := usecase.NewAviatorUseCase(roundRepo, betRepo, roundCache, balance, publisher, cfg)
+	uc := usecase.NewAviatorUseCase(roundRepo, betRepo, roundCache, wallet, publisher, cfg)
 	uc.StartEngine(ctx)
 
 	grpcHandler := deliverygrpc.NewAviatorHandler(uc)
@@ -65,7 +65,7 @@ func main() {
 	pb.RegisterAviatorServiceServer(grpcServer, grpcHandler)
 
 	httpMux := http.NewServeMux()
-	deliveryhttp.NewHandler(uc, balance).Register(httpMux)
+	deliveryhttp.NewHandler(uc, wallet).Register(httpMux)
 	httpSrv := &http.Server{Addr: ":" + cfg.HTTPPort, Handler: httpMux}
 
 	go func() {

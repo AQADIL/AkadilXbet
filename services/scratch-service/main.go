@@ -11,6 +11,7 @@ import (
 	"github.com/akadilxbet/scratch-service/internal/config"
 	"github.com/akadilxbet/scratch-service/internal/handler"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/nats-io/nats.go"
 )
 
 func main() {
@@ -25,7 +26,14 @@ func main() {
 	}
 	defer pool.Close()
 
-	h := handler.New(pool, cfg.JWTSecret)
+	nc, err := nats.Connect(cfg.NatsURL)
+	if err != nil {
+		slog.Error("failed to connect to nats", "err", err)
+		os.Exit(1)
+	}
+	defer nc.Drain()
+
+	h := handler.New(pool, cfg.JWTSecret, nc)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /scratch/play", h.Play)

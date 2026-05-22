@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log/slog"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -16,6 +17,7 @@ func NewReverseProxy(baseURL string) http.Handler {
 	proxy.Director = func(r *http.Request) {
 		original(r)
 		r.Host = target.Host
+		slog.Info("proxying", "target", target.String(), "path", r.URL.Path)
 	}
 	return proxy
 }

@@ -13,14 +13,14 @@ import (
 )
 
 type Handler struct {
-	uc      *usecase.AviatorUseCase
-	balance *client.BalanceStore
+	uc     *usecase.AviatorUseCase
+	wallet *client.WalletClient
 }
 
 const DemoUserID = "00000000-0000-0000-0000-000000000001"
 
-func NewHandler(uc *usecase.AviatorUseCase, balance *client.BalanceStore) *Handler {
-	return &Handler{uc: uc, balance: balance}
+func NewHandler(uc *usecase.AviatorUseCase, wallet *client.WalletClient) *Handler {
+	return &Handler{uc: uc, wallet: wallet}
 }
 
 func (h *Handler) Register(mux *http.ServeMux) {
@@ -111,7 +111,7 @@ func (h *Handler) autoCashOut(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) getBalance(w http.ResponseWriter, r *http.Request) {
 	uid := userID(r)
-	bal, err := h.balance.Get(r.Context(), uid)
+	bal, err := h.wallet.GetBalance(r.Context(), uid)
 	if err != nil {
 		jsonErr(w, http.StatusInternalServerError, err.Error())
 		return

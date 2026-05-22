@@ -12,14 +12,14 @@ import (
 )
 
 type Handler struct {
-	uc      *usecase.BalloonUseCase
-	balance *client.BalanceStore
+	uc     *usecase.BalloonUseCase
+	wallet *client.WalletClient
 }
 
 const DemoUserID = "00000000-0000-0000-0000-000000000001"
 
-func NewHandler(uc *usecase.BalloonUseCase, balance *client.BalanceStore) *Handler {
-	return &Handler{uc: uc, balance: balance}
+func NewHandler(uc *usecase.BalloonUseCase, wallet *client.WalletClient) *Handler {
+	return &Handler{uc: uc, wallet: wallet}
 }
 
 func (h *Handler) Register(mux *http.ServeMux) {
@@ -91,7 +91,7 @@ func (h *Handler) release(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) getBalance(w http.ResponseWriter, r *http.Request) {
-	bal, err := h.balance.Get(r.Context(), userID(r))
+	bal, err := h.wallet.GetBalance(r.Context(), userID(r))
 	if err != nil {
 		jsonErr(w, http.StatusInternalServerError, err.Error())
 		return

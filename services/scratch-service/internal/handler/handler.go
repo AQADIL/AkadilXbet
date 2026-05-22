@@ -4,20 +4,23 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/akadilxbet/scratch-service/internal/rtp"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/nats-io/nats.go"
 )
 
 type Handler struct {
 	db        *pgxpool.Pool
 	jwtSecret []byte
+	nc        *nats.Conn
 }
 
-func New(db *pgxpool.Pool, jwtSecret string) *Handler {
-	return &Handler{db: db, jwtSecret: []byte(jwtSecret)}
+func New(db *pgxpool.Pool, jwtSecret string, nc *nats.Conn) *Handler {
+	return &Handler{db: db, jwtSecret: []byte(jwtSecret), nc: nc}
 }
 
 type playReq struct {
@@ -85,6 +88,12 @@ func (h *Handler) Play(w http.ResponseWriter, r *http.Request) {
 			 VALUES (gen_random_uuid(), $1, 'win', $2, 'Scratch Loto win', NOW())`,
 			userID, result.PayoutCents,
 		)
+
+		// Send push notification for win
+		if h.nc != nil {
+			payload := `{"user_id":"` + userID + `","title":"You won!","body":"Scratch Loto win: ` + strconv.FormatInt(result.PayoutCents/100, 10) + ` credits","tag":"win"}`
+			_ = h.nc.Publish("notification.send", []byte(payload))
+		}
 	}
 
 	writeJSON(w, http.StatusOK, playResp{

@@ -4,20 +4,23 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/akadilxbet/slots-service/internal/rtp"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/nats-io/nats.go"
 )
 
 type Handler struct {
 	db        *pgxpool.Pool
 	jwtSecret []byte
+	nc        *nats.Conn
 }
 
-func New(db *pgxpool.Pool, jwtSecret string) *Handler {
-	return &Handler{db: db, jwtSecret: []byte(jwtSecret)}
+func New(db *pgxpool.Pool, jwtSecret string, nc *nats.Conn) *Handler {
+	return &Handler{db: db, jwtSecret: []byte(jwtSecret), nc: nc}
 }
 
 type spinReq struct {
@@ -84,6 +87,12 @@ func (h *Handler) Spin(w http.ResponseWriter, r *http.Request) {
 			 VALUES (gen_random_uuid(), $1, 'win', $2, 'Slots win', NOW())`,
 			userID, result.PayoutCents,
 		)
+
+		// Send push notification for win
+		if h.nc != nil {
+			payload := `{"user_id":"` + userID + `","title":"Slots win!","body":"You won ` + strconv.FormatInt(result.PayoutCents/100, 10) + ` credits","tag":"win"}`
+			_ = h.nc.Publish("notification.send", []byte(payload))
+		}
 	}
 
 	writeJSON(w, http.StatusOK, spinResp{

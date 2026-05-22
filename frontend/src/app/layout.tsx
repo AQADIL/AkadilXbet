@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthProvider } from "@/context/AuthContext";
+import PushNotificationButton from "@/components/PushNotificationButton";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -54,7 +55,19 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/akadilxbet-logo.png" />
       </head>
       <body className="min-h-full bg-[#08140C] text-[#f0fdf4] antialiased">
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          {children}
+          <PushNotificationButton />
+        </AuthProvider>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/push-sw.js').catch(console.error);
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );

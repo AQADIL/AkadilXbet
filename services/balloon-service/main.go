@@ -47,9 +47,9 @@ func main() {
 	defer nc.Drain()
 
 	sessionRepo := postgres.NewSessionRepo(db)
-	balance := client.NewBalanceStore(rdb)
+	wallet := client.NewWalletClient(db)
 	publisher := messaging.NewPublisher(nc)
-	uc := usecase.NewBalloonUseCase(sessionRepo, balance, publisher, cfg)
+	uc := usecase.NewBalloonUseCase(sessionRepo, wallet, publisher, cfg)
 
 	grpcHandler := deliverygrpc.NewBalloonHandler(uc)
 	lis, err := net.Listen("tcp", ":"+cfg.GRPCPort)
@@ -60,7 +60,7 @@ func main() {
 	pb.RegisterBalloonServiceServer(grpcServer, grpcHandler)
 
 	mux := http.NewServeMux()
-	deliveryhttp.NewHandler(uc, balance).Register(mux)
+	deliveryhttp.NewHandler(uc, wallet).Register(mux)
 	httpSrv := &http.Server{Addr: ":" + cfg.HTTPPort, Handler: mux}
 
 	go func() {

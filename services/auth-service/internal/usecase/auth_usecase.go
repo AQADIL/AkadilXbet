@@ -58,6 +58,7 @@ func (uc *AuthUseCase) Register(ctx context.Context, email, password string) (st
 	}
 
 	_ = uc.publisher.PublishUserCreated(user.ID, user.Email)
+	_ = uc.publisher.PublishNotification(user.ID, "Welcome!", "Account created successfully", "auth")
 
 	return user.ID, token, nil
 }
@@ -79,6 +80,8 @@ func (uc *AuthUseCase) Login(ctx context.Context, email, password string) (strin
 	if err != nil {
 		return "", "", err
 	}
+
+	_ = uc.publisher.PublishNotification(user.ID, "Login successful", "Welcome back!", "auth")
 
 	return user.ID, token, nil
 }

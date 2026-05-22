@@ -6,6 +6,7 @@ type Config struct {
 	Port        string
 	PostgresDSN string
 	JWTSecret   string
+	NatsURL     string
 }
 
 func Load() *Config {
@@ -13,6 +14,7 @@ func Load() *Config {
 		Port:        getEnv("SCRATCH_SERVICE_PORT", "8082"),
 		PostgresDSN: buildDSN(),
 		JWTSecret:   mustGetEnv("JWT_SECRET"),
+		NatsURL:     getEnv("NATS_URL", "nats://localhost:4222"),
 	}
 }
 
