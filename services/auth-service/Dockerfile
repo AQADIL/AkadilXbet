@@ -1,8 +1,9 @@
 FROM golang:1.23-alpine AS builder
-WORKDIR /app
-COPY go.mod go.sum ./
+WORKDIR /src
+COPY akadilxbet-protos ./akadilxbet-protos
+COPY services/auth-service ./services/auth-service
+WORKDIR /src/services/auth-service
 RUN go mod download
-COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o /auth-service .
 
 FROM alpine:3.20

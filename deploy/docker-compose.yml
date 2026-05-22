@@ -1,5 +1,3 @@
-version: "3.9"
-
 networks:
   akadilxbet_net:
     driver: bridge
@@ -93,8 +91,8 @@ services:
 
   auth-service:
     build:
-      context: ../services/auth-service
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: services/auth-service/Dockerfile
     container_name: akadilxbet_auth
     environment:
       AUTH_SERVICE_GRPC_PORT: ${AUTH_SERVICE_GRPC_PORT}
@@ -126,8 +124,8 @@ services:
 
   wallet-service:
     build:
-      context: ../services/wallet-service
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: services/wallet-service/Dockerfile
     container_name: akadilxbet_wallet
     environment:
       WALLET_SERVICE_GRPC_PORT: ${WALLET_SERVICE_GRPC_PORT}
@@ -143,6 +141,76 @@ services:
       - akadilxbet_net
     depends_on:
       postgres:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    restart: unless-stopped
+
+  aviator-service:
+    build:
+      context: ..
+      dockerfile: services/aviator-service/Dockerfile
+    container_name: akadilxbet_aviator
+    environment:
+      AVIATOR_SERVICE_GRPC_PORT: ${AVIATOR_SERVICE_GRPC_PORT}
+      AVIATOR_SERVICE_HTTP_PORT: ${AVIATOR_SERVICE_HTTP_PORT}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: ${POSTGRES_DB}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      NATS_URL: nats://nats:4222
+      POSTGRES_USER_FILE: /run/secrets/postgres_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      REDIS_PASSWORD_FILE: /run/secrets/redis_password
+    secrets:
+      - postgres_user
+      - postgres_password
+      - redis_password
+    ports:
+      - "${AVIATOR_SERVICE_GRPC_PORT}:${AVIATOR_SERVICE_GRPC_PORT}"
+      - "${AVIATOR_SERVICE_HTTP_PORT}:${AVIATOR_SERVICE_HTTP_PORT}"
+    networks:
+      - akadilxbet_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    restart: unless-stopped
+
+  balloon-service:
+    build:
+      context: ..
+      dockerfile: services/balloon-service/Dockerfile
+    container_name: akadilxbet_balloon
+    environment:
+      BALLOON_SERVICE_GRPC_PORT: ${BALLOON_SERVICE_GRPC_PORT}
+      BALLOON_SERVICE_HTTP_PORT: ${BALLOON_SERVICE_HTTP_PORT}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: ${POSTGRES_DB}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      NATS_URL: nats://nats:4222
+      POSTGRES_USER_FILE: /run/secrets/postgres_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      REDIS_PASSWORD_FILE: /run/secrets/redis_password
+    secrets:
+      - postgres_user
+      - postgres_password
+      - redis_password
+    ports:
+      - "${BALLOON_SERVICE_GRPC_PORT}:${BALLOON_SERVICE_GRPC_PORT}"
+      - "${BALLOON_SERVICE_HTTP_PORT}:${BALLOON_SERVICE_HTTP_PORT}"
+    networks:
+      - akadilxbet_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       nats:
         condition: service_healthy
@@ -194,8 +262,8 @@ services:
 
   api-gateway:
     build:
-      context: ../api-gateway
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: api-gateway/Dockerfile
     container_name: akadilxbet_gateway
     environment:
       API_GATEWAY_PORT: ${API_GATEWAY_PORT}
@@ -203,12 +271,17 @@ services:
       AUTH_SERVICE_HTTP_PORT: ${AUTH_SERVICE_HTTP_PORT}
       AUTH_SERVICE_HOST: auth-service
       WALLET_SERVICE_ADDR: wallet-service:${WALLET_SERVICE_GRPC_PORT}
+      AVIATOR_SERVICE_HTTP_URL: http://aviator-service:${AVIATOR_SERVICE_HTTP_PORT}
+      BALLOON_SERVICE_HTTP_URL: http://balloon-service:${BALLOON_SERVICE_HTTP_PORT}
       SCRATCH_SERVICE_HOST: scratch-service
       SCRATCH_SERVICE_PORT: ${SCRATCH_SERVICE_PORT}
       SLOTS_SERVICE_HOST: slots-service
       SLOTS_SERVICE_PORT: ${SLOTS_SERVICE_PORT}
       NATS_URL: nats://nats:4222
       JWT_SECRET: ${JWT_SECRET}
+      JWT_SECRET_FILE: /run/secrets/jwt_secret
+    secrets:
+      - jwt_secret
     ports:
       - "${API_GATEWAY_PORT}:${API_GATEWAY_PORT}"
     networks:
@@ -216,6 +289,8 @@ services:
     depends_on:
       - auth-service
       - wallet-service
+      - aviator-service
+      - balloon-service
       - scratch-service
       - slots-service
     restart: unless-stopped
@@ -239,3 +314,12 @@ services:
       - api-gateway
     restart: unless-stopped
 
+secrets:
+  jwt_secret:
+    file: ../secrets/jwt_secret.txt
+  postgres_user:
+    file: ../secrets/postgres_user.txt
+  postgres_password:
+    file: ../secrets/postgres_password.txt
+  redis_password:
+    file: ../secrets/redis_password.txt

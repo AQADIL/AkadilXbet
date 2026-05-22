@@ -1,5 +1,7 @@
-import MobileShell from "@/components/layout/MobileShell";
+"use client";
+
 import Link from "next/link";
+import MobileShell from "@/components/layout/MobileShell";
 
 const GAMES = [
   {
@@ -46,7 +48,7 @@ const GAMES = [
     badgeColor: "text-text-gold border-text-gold/40 bg-text-gold/10",
     icon: (
       <svg viewBox="0 0 48 48" fill="none" className="w-10 h-10">
-        <rect x="6" y="8" width="36" height="32" rx="5" fill="#1a3d22" stroke="#4ade80" strokeWidth="1.5" opacity="0.8"/>
+        <rect x="6" y="8" width="36" height="32" rx="5" fill="#1a3d22" stroke="#4ade80" strokeWidth="1.5" opacity="0.85"/>
         <rect x="10" y="13" width="10" height="10" rx="2" fill="#4ade80" opacity="0.3"/>
         <rect x="23" y="13" width="10" height="10" rx="2" fill="#4ade80" opacity="0.3"/>
         <rect x="10" y="27" width="10" height="10" rx="2" fill="#4ade80" opacity="0.3"/>

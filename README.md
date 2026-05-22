@@ -10,6 +10,8 @@ AkadilXbet/
 ├── api-gateway/       # Go API Gateway (HTTP → gRPC reverse proxy)
 ├── services/          # Go microservices
 │   ├── auth-service/
+│   ├── aviator-service/   # Fast game: Aviator
+│   ├── balloon-service/   # Fast game: Balloon
 │   ├── betting-service/
 │   ├── wallet-service/
 │   ├── odds-service/
@@ -19,7 +21,8 @@ AkadilXbet/
 │   └── reporting-service/
 ├── deploy/            # Docker Compose, Kubernetes manifests, Helm charts
 │   └── docker-compose.yml
-├── proto/             # Shared protobuf definitions
+├── proto/             # Shared protobuf definitions (+ aviator/, balloon/)
+├── pkg/bankrtp/       # Shared RTP / house bank logic
 ├── .env.example
 ├── .gitignore
 └── Makefile
@@ -59,4 +62,17 @@ make infra-up       # Start all infrastructure containers
 make infra-down     # Stop all infrastructure containers
 make proto-gen      # Generate Go code from .proto files
 make test           # Run all service tests
+make migrate-all    # includes aviator + balloon migrations
 ```
+
+### Fast Games: Aviator & Balloon (added)
+
+| Area | What |
+|------|------|
+| Backend | `services/aviator-service`, `services/balloon-service` (Clean Architecture, gRPC, Postgres, Redis, NATS) |
+| Proto | `proto/aviator/`, `proto/balloon/` |
+| RTP | `pkg/bankrtp/` — server-side crash / pop logic |
+| Gateway | HTTP proxy `/api/v1/aviator/*`, `/api/v1/balloon/*` |
+| Frontend | `/fast-games`, `/fast-games/aviator`, `/fast-games/balloon` |
+| Docker | `aviator-service`, `balloon-service` in `deploy/docker-compose.yml` |
+| Env | `AVIATOR_SERVICE_*`, `BALLOON_SERVICE_*` in `.env.example` |
