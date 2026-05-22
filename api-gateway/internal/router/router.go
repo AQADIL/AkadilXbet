@@ -7,6 +7,7 @@ import (
 	"net/url"
 
 	"github.com/akadilxbet/api-gateway/internal/config"
+	"github.com/akadilxbet/api-gateway/internal/handler"
 	"github.com/akadilxbet/api-gateway/internal/middleware"
 )
 
@@ -16,16 +17,30 @@ func New(cfg *config.Config) http.Handler {
 	mux.HandleFunc("GET /health", healthHandler)
 	mux.HandleFunc("GET /ready", readyHandler)
 
+	// Reverse proxies for game services
+	aviatorProxy := handler.NewReverseProxy(cfg.AviatorHTTPURL)
+	balloonProxy := handler.NewReverseProxy(cfg.BalloonHTTPURL)
+	mux.Handle("/api/v1/aviator/", aviatorProxy)
+	mux.Handle("/api/v1/balloon/", balloonProxy)
+
 	// Game routes
 	mux.HandleFunc("POST /api/games/dice/play", dicePlayHandler)
 	mux.HandleFunc("POST /api/games/mines/start", minesStartHandler)
 	mux.HandleFunc("POST /api/games/mines/open", minesOpenHandler)
 	mux.HandleFunc("POST /api/games/mines/cashout", minesCashoutHandler)
 
-	// Auth proxy
+	// Auth service proxy
 	authTarget, _ := url.Parse("http://" + cfg.AuthServiceHTTPAddr)
 	authProxy := httputil.NewSingleHostReverseProxy(authTarget)
 	mux.Handle("/auth/", authProxy)
+
+	scratchTarget, _ := url.Parse("http://" + cfg.ScratchServiceAddr)
+	scratchProxy := httputil.NewSingleHostReverseProxy(scratchTarget)
+	mux.Handle("/scratch/", scratchProxy)
+
+	slotsTarget, _ := url.Parse("http://" + cfg.SlotsServiceAddr)
+	slotsProxy := httputil.NewSingleHostReverseProxy(slotsTarget)
+	mux.Handle("/slots/", slotsProxy)
 
 	return middleware.Chain(mux,
 		middleware.RequestID,

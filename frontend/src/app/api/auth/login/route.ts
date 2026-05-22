@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_BASE_URL = process.env.API_BASE_URL || "http://api-gateway:8082";
+const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:8080";
 
 export async function POST(req: NextRequest) {
   try {

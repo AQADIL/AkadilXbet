@@ -1,0 +1,113 @@
+syntax = "proto3";
+
+package aviator;
+
+option go_package = "github.com/akadilxbet/aviator-service/internal/pb";
+
+service AviatorService {
+  rpc GetCurrentRound (GetCurrentRoundRequest) returns (RoundResponse);
+  rpc PlaceBet (PlaceBetRequest) returns (BetResponse);
+  rpc CancelBet (CancelBetRequest) returns (BetResponse);
+  rpc CashOut (CashOutRequest) returns (CashOutResponse);
+  rpc SetAutoCashOut (SetAutoCashOutRequest) returns (AutoCashOutResponse);
+  rpc ClearAutoCashOut (ClearAutoCashOutRequest) returns (AutoCashOutResponse);
+  rpc GetMyActiveBets (GetMyActiveBetsRequest) returns (BetsListResponse);
+  rpc GetRoundHistory (GetRoundHistoryRequest) returns (RoundHistoryResponse);
+  rpc GetRoundById (GetRoundByIdRequest) returns (RoundResponse);
+  rpc GetBetsByRound (GetBetsByRoundRequest) returns (BetsListResponse);
+  rpc GetPlayerStats (GetPlayerStatsRequest) returns (PlayerStatsResponse);
+  rpc StartRound (StartRoundRequest) returns (RoundResponse);
+  rpc StreamRoundUpdates (StreamRoundRequest) returns (stream RoundTick);
+}
+
+message GetCurrentRoundRequest {}
+message StartRoundRequest {}
+message StreamRoundRequest {}
+message GetRoundByIdRequest { string round_id = 1; }
+message GetRoundHistoryRequest { int32 limit = 1; }
+message GetBetsByRoundRequest { string round_id = 1; }
+message GetMyActiveBetsRequest { string user_id = 1; }
+message GetPlayerStatsRequest { string user_id = 1; }
+
+message PlaceBetRequest {
+  string user_id = 1;
+  int64  amount_cents = 2;
+}
+
+message CancelBetRequest {
+  string user_id = 1;
+  string bet_id = 2;
+}
+
+message CashOutRequest {
+  string user_id = 1;
+  string bet_id = 2;
+}
+
+message SetAutoCashOutRequest {
+  string user_id = 1;
+  string bet_id = 2;
+  double multiplier = 3;
+}
+
+message ClearAutoCashOutRequest {
+  string user_id = 1;
+  string bet_id = 2;
+}
+
+message RoundResponse {
+  string round_id = 1;
+  string status = 2;
+  double current_multiplier = 3;
+  double crash_multiplier = 4;
+  int64  started_at = 5;
+  int64  crashed_at = 6;
+}
+
+message RoundTick {
+  string round_id = 1;
+  string status = 2;
+  double current_multiplier = 3;
+  int64  server_time = 4;
+}
+
+message BetResponse {
+  string bet_id = 1;
+  string round_id = 2;
+  string user_id = 3;
+  int64  amount_cents = 4;
+  string status = 5;
+  int64  balance_cents = 6;
+}
+
+message CashOutResponse {
+  string bet_id = 1;
+  double multiplier = 2;
+  int64  payout_cents = 3;
+  int64  balance_cents = 4;
+}
+
+message AutoCashOutResponse {
+  string bet_id = 1;
+  double multiplier = 2;
+  bool active = 3;
+}
+
+message BetEntry {
+  string bet_id = 1;
+  string user_id = 2;
+  int64  amount_cents = 3;
+  string status = 4;
+  double cashout_multiplier = 5;
+  int64  payout_cents = 6;
+}
+
+message BetsListResponse { repeated BetEntry bets = 1; }
+message RoundHistoryResponse { repeated RoundResponse rounds = 1; }
+
+message PlayerStatsResponse {
+  int32 total_bets = 1;
+  int32 total_wins = 2;
+  int64 total_wagered_cents = 3;
+  int64 total_won_cents = 4;
+}

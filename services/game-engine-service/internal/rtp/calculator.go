@@ -13,6 +13,7 @@ var fairGames = map[string]bool{
 
 var managedGames = map[string]bool{
 	"aviator": true,
+	"balloon": true,
 	"mines":   true,
 	"slots":   true,
 }

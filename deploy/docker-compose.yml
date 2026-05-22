@@ -1,5 +1,3 @@
-version: "3.9"
-
 networks:
   akadilxbet_net:
     driver: bridge
@@ -80,6 +78,7 @@ services:
 
   pgadmin:
     image: dpage/pgadmin4:latest
+    platform: linux/amd64
     container_name: akadilxbet_pgadmin
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
@@ -93,8 +92,8 @@ services:
 
   auth-service:
     build:
-      context: ../services/auth-service
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: services/auth-service/Dockerfile
     container_name: akadilxbet_auth
     environment:
       AUTH_SERVICE_GRPC_PORT: ${AUTH_SERVICE_GRPC_PORT}
@@ -126,8 +125,8 @@ services:
 
   wallet-service:
     build:
-      context: ../services/wallet-service
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: services/wallet-service/Dockerfile
     container_name: akadilxbet_wallet
     environment:
       WALLET_SERVICE_GRPC_PORT: ${WALLET_SERVICE_GRPC_PORT}
@@ -148,10 +147,116 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  aviator-service:
+    build:
+      context: ..
+      dockerfile: services/aviator-service/Dockerfile
+    container_name: akadilxbet_aviator
+    environment:
+      AVIATOR_SERVICE_GRPC_PORT: ${AVIATOR_SERVICE_GRPC_PORT}
+      AVIATOR_SERVICE_HTTP_PORT: ${AVIATOR_SERVICE_HTTP_PORT}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      NATS_URL: nats://nats:4222
+    ports:
+      - "${AVIATOR_SERVICE_GRPC_PORT}:${AVIATOR_SERVICE_GRPC_PORT}"
+      - "${AVIATOR_SERVICE_HTTP_PORT}:${AVIATOR_SERVICE_HTTP_PORT}"
+    networks:
+      - akadilxbet_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    restart: unless-stopped
+
+  balloon-service:
+    build:
+      context: ..
+      dockerfile: services/balloon-service/Dockerfile
+    container_name: akadilxbet_balloon
+    environment:
+      BALLOON_SERVICE_GRPC_PORT: ${BALLOON_SERVICE_GRPC_PORT}
+      BALLOON_SERVICE_HTTP_PORT: ${BALLOON_SERVICE_HTTP_PORT}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      NATS_URL: nats://nats:4222
+    ports:
+      - "${BALLOON_SERVICE_GRPC_PORT}:${BALLOON_SERVICE_GRPC_PORT}"
+      - "${BALLOON_SERVICE_HTTP_PORT}:${BALLOON_SERVICE_HTTP_PORT}"
+    networks:
+      - akadilxbet_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    restart: unless-stopped
+
+  scratch-service:
+    build:
+      context: ../services/scratch-service
+      dockerfile: Dockerfile
+    container_name: akadilxbet_scratch
+    environment:
+      SCRATCH_SERVICE_PORT: ${SCRATCH_SERVICE_PORT}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      JWT_SECRET: ${JWT_SECRET}
+    ports:
+      - "${SCRATCH_SERVICE_PORT}:${SCRATCH_SERVICE_PORT}"
+    networks:
+      - akadilxbet_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  slots-service:
+    build:
+      context: ../services/slots-service
+      dockerfile: Dockerfile
+    container_name: akadilxbet_slots
+    environment:
+      SLOTS_SERVICE_PORT: ${SLOTS_SERVICE_PORT}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      JWT_SECRET: ${JWT_SECRET}
+    ports:
+      - "${SLOTS_SERVICE_PORT}:${SLOTS_SERVICE_PORT}"
+    networks:
+      - akadilxbet_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
   api-gateway:
     build:
-      context: ../api-gateway
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: api-gateway/Dockerfile
     container_name: akadilxbet_gateway
     environment:
       API_GATEWAY_PORT: ${API_GATEWAY_PORT}
@@ -159,6 +264,12 @@ services:
       AUTH_SERVICE_HTTP_PORT: ${AUTH_SERVICE_HTTP_PORT}
       AUTH_SERVICE_HOST: auth-service
       WALLET_SERVICE_ADDR: wallet-service:${WALLET_SERVICE_GRPC_PORT}
+      AVIATOR_SERVICE_HTTP_URL: http://aviator-service:${AVIATOR_SERVICE_HTTP_PORT}
+      BALLOON_SERVICE_HTTP_URL: http://balloon-service:${BALLOON_SERVICE_HTTP_PORT}
+      SCRATCH_SERVICE_HOST: scratch-service
+      SCRATCH_SERVICE_PORT: ${SCRATCH_SERVICE_PORT}
+      SLOTS_SERVICE_HOST: slots-service
+      SLOTS_SERVICE_PORT: ${SLOTS_SERVICE_PORT}
       NATS_URL: nats://nats:4222
       JWT_SECRET: ${JWT_SECRET}
     ports:
@@ -168,6 +279,10 @@ services:
     depends_on:
       - auth-service
       - wallet-service
+      - aviator-service
+      - balloon-service
+      - scratch-service
+      - slots-service
     restart: unless-stopped
 
   frontend:
@@ -177,10 +292,10 @@ services:
       args:
         NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
         NEXT_PUBLIC_APP_ENV: ${NEXT_PUBLIC_APP_ENV}
-        API_BASE_URL: http://api-gateway:8080
+        API_BASE_URL: http://api-gateway:${API_GATEWAY_PORT}
     container_name: akadilxbet_frontend
     environment:
-      API_BASE_URL: http://api-gateway:8080
+      API_BASE_URL: http://api-gateway:${API_GATEWAY_PORT}
     ports:
       - "${FRONTEND_PORT}:3000"
     networks:
