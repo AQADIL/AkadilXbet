@@ -2,96 +2,93 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  formatCredits,
-  getBalloonBalance,
-  getBalloonSession,
-  placeBalloonBet,
-  pumpBalloon,
-  releaseBalloon,
-  type BalloonSession,
-} from "@/lib/gameApi";
+import { formatCredits } from "@/lib/gameApi";
 
-const BET_AMOUNT = 500;
+const INITIAL_CENTS = 100_000; // 1000 credits
+const PUMP_MS = 150;
+const MULT_PER_TICK = 0.06;
+
+function genCrashAt(): number {
+  const r = Math.random();
+  return 1.1 + r * r * 11; // skewed towards lower values, up to ~12x
+}
 
 export default function BalloonGame() {
-  const [session, setSession] = useState<BalloonSession | null>(null);
-  const [balance, setBalance] = useState(100_000);
+  const [balanceCents, setBalanceCents] = useState(INITIAL_CENTS);
+  const [status, setStatus] = useState<"idle" | "active" | "popped" | "released">("idle");
+  const [mult, setMult] = useState(1.0);
   const [holding, setHolding] = useState(false);
   const [message, setMessage] = useState("");
   const [customBet, setCustomBet] = useState("5.00");
+
+  const multRef = useRef(1.0);
+  const statusRef = useRef<"idle" | "active" | "popped" | "released">("idle");
+  const crashAtRef = useRef(0);
+  const betCentsRef = useRef(0);
+  const balanceCentsRef = useRef(INITIAL_CENTS);
   const pumpRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const refresh = useCallback(async () => {
-    try {
-      const [s, b] = await Promise.all([getBalloonSession(), getBalloonBalance()]);
-      setSession(s);
-      setBalance(b.balance_cents);
-    } catch {
-      /* offline */
-    }
+  useEffect(() => { balanceCentsRef.current = balanceCents; }, [balanceCents]);
+
+  const clearPump = useCallback(() => {
+    if (pumpRef.current) { clearInterval(pumpRef.current); pumpRef.current = null; }
   }, []);
 
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
+  useEffect(() => () => clearPump(), [clearPump]);
 
-  const startPump = useCallback(
-    async (betAmountCents?: number) => {
-      if (session?.status !== "active") {
-        setMessage("");
-        try {
-          const amount = betAmountCents ?? BET_AMOUNT;
-          const res = await placeBalloonBet(amount);
-          setSession(res.session);
-          setBalance(res.balance_cents);
-        } catch (e) {
-          setMessage(e instanceof Error ? e.message : "Start failed");
-          return;
-        }
-      }
-      setHolding(true);
-      pumpRef.current = setInterval(async () => {
-        try {
-          const res = await pumpBalloon();
-          setSession(res.session);
-          if (res.popped) {
-            setHolding(false);
-            if (pumpRef.current) clearInterval(pumpRef.current);
-            setMessage("Popped! You held too long.");
-          }
-        } catch {
-          /* ignore tick errors */
-        }
-      }, 150);
-    },
-    [session?.status]
-  );
+  const doStartBet = useCallback((cents: number): boolean => {
+    if (cents <= 0) { setMessage("Введите корректную сумму"); return false; }
+    if (cents > balanceCentsRef.current) { setMessage("Недостаточно средств"); return false; }
+    balanceCentsRef.current -= cents;
+    setBalanceCents(prev => prev - cents);
+    betCentsRef.current = cents;
+    multRef.current = 1.0;
+    setMult(1.0);
+    crashAtRef.current = genCrashAt();
+    statusRef.current = "active";
+    setStatus("active");
+    setMessage("");
+    return true;
+  }, []);
 
-  const stopPump = useCallback(async () => {
+  const doPump = useCallback(() => {
+    const next = parseFloat((multRef.current + MULT_PER_TICK).toFixed(3));
+    multRef.current = next;
+    setMult(next);
+    if (next >= crashAtRef.current) {
+      clearPump();
+      statusRef.current = "popped";
+      setStatus("popped");
+      setHolding(false);
+      setMessage("Лопнул! Держали слишком долго.");
+    }
+  }, [clearPump]);
+
+  const startPump = useCallback((cents: number) => {
+    setMessage("");
+    if (statusRef.current !== "active") {
+      const ok = doStartBet(cents);
+      if (!ok) return;
+    }
+    setHolding(true);
+    clearPump();
+    pumpRef.current = setInterval(doPump, PUMP_MS);
+  }, [doStartBet, doPump, clearPump]);
+
+  const stopPump = useCallback(() => {
+    clearPump();
     setHolding(false);
-    if (pumpRef.current) {
-      clearInterval(pumpRef.current);
-      pumpRef.current = null;
-    }
-    if (session?.status !== "active") return;
-    try {
-      const res = await releaseBalloon();
-      setSession(res.session);
-      setBalance(res.balance_cents);
-      setMessage(`Released ${res.multiplier.toFixed(2)}x — +${formatCredits(res.payout_cents)}`);
-    } catch (e) {
-      setMessage(e instanceof Error ? e.message : "Release failed");
-    }
-  }, [session?.status]);
+    if (statusRef.current !== "active") return;
+    const payout = Math.round(betCentsRef.current * multRef.current);
+    balanceCentsRef.current += payout;
+    setBalanceCents(prev => prev + payout);
+    statusRef.current = "released";
+    setStatus("released");
+    setMessage(`Выведено ${multRef.current.toFixed(2)}x — +${formatCredits(payout)}`);
+  }, [clearPump]);
 
-  useEffect(() => () => {
-    if (pumpRef.current) clearInterval(pumpRef.current);
-  }, []);
-
-  const mult = session?.current_multiplier ?? 1;
+  const popped = status === "popped";
   const scale = 0.6 + Math.min(mult, 10) * 0.08;
-  const popped = session?.status === "popped";
 
   return (
     <div className="relative w-full h-[calc(100svh-4rem)] overflow-hidden bg-surface-base flex flex-col">
@@ -100,7 +97,7 @@ export default function BalloonGame() {
           Balloon
         </span>
         <span className="glass px-3 py-1 rounded-full text-xs text-text-gold font-bold tabular-nums">
-          {formatCredits(balance)}
+          {formatCredits(balanceCents)}
         </span>
       </div>
 
@@ -130,7 +127,7 @@ export default function BalloonGame() {
           {mult.toFixed(2)}x
         </p>
         <p className="text-[10px] uppercase tracking-widest text-text-muted mt-2">
-          {holding ? "Pumping…" : "Hold to inflate · Release to cash out"}
+          {holding ? "Накачивается…" : "Удерживайте · Отпустите для вывода"}
         </p>
       </div>
 
@@ -160,8 +157,7 @@ export default function BalloonGame() {
           <button
             onClick={() => {
               const val = Math.max(0.01, parseFloat(customBet || "0")) || 0.01;
-              const cents = Math.round(val * 100);
-              startPump(cents);
+              startPump(Math.round(val * 100));
             }}
             className="h-10 px-4 rounded-lg bg-brand-glow text-surface-base font-semibold"
           >
