@@ -152,6 +152,7 @@ services:
       context: ..
       dockerfile: services/aviator-service/Dockerfile
     container_name: akadilxbet_aviator
+    platform: linux/amd64
     environment:
       AVIATOR_SERVICE_GRPC_PORT: ${AVIATOR_SERVICE_GRPC_PORT}
       AVIATOR_SERVICE_HTTP_PORT: ${AVIATOR_SERVICE_HTTP_PORT}
@@ -183,6 +184,7 @@ services:
       context: ..
       dockerfile: services/balloon-service/Dockerfile
     container_name: akadilxbet_balloon
+    platform: linux/amd64
     environment:
       BALLOON_SERVICE_GRPC_PORT: ${BALLOON_SERVICE_GRPC_PORT}
       BALLOON_SERVICE_HTTP_PORT: ${BALLOON_SERVICE_HTTP_PORT}
