@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import MobileShell from "@/components/layout/MobileShell";
 import { useBalance } from "@/hooks/useBalance";
+import { authFetch, getUser, WalletDTO } from "@/lib/auth";
 import { getRouletteBulletChamber } from "@/lib/rtp";
 
 const BET_PRESETS = [25, 50, 100, 200, 500];
@@ -60,7 +61,39 @@ function ChamberDot({ idx, bullet, current, pulled }: {
 type Phase = "BETTING" | "PLAYING" | "SHOT" | "SURVIVED" | "COLLECTED";
 
 export default function RoulettePage() {
-  const { balance, placeBet, addWinnings } = useBalance();
+  const localBalance = useBalance();
+  const [backendBalance, setBackendBalance] = useState<number | null>(null);
+  const isLoggedIn = !!getUser();
+  const balance = isLoggedIn ? (backendBalance ?? 0) : localBalance.balance;
+
+  const fetchWallet = useCallback(() => {
+    if (!isLoggedIn) return;
+    authFetch("/api/auth/wallet")
+      .then((r) => r.json())
+      .then((d: WalletDTO) => setBackendBalance(Math.floor(d.balance_cents / 100)))
+      .catch(() => {});
+  }, [isLoggedIn]);
+
+  useEffect(() => { fetchWallet(); }, [fetchWallet]);
+
+  const placeBet = useCallback((amount: number): boolean => {
+    if (isLoggedIn) {
+      if ((backendBalance ?? 0) < amount) return false;
+      setBackendBalance((prev) => (prev ?? 0) - amount);
+      return true;
+    }
+    return localBalance.placeBet(amount);
+  }, [isLoggedIn, backendBalance, localBalance]);
+
+  const addWinnings = useCallback((amount: number) => {
+    if (isLoggedIn) {
+      setBackendBalance((prev) => (prev ?? 0) + amount);
+      fetchWallet();
+    } else {
+      localBalance.addWinnings(amount);
+    }
+  }, [isLoggedIn, fetchWallet, localBalance]);
+
   const [phase, setPhase] = useState<Phase>("BETTING");
   const [betAmount, setBetAmount] = useState(50);
   const [bulletChamber, setBulletChamber] = useState(0);
@@ -177,7 +210,14 @@ export default function RoulettePage() {
             </svg>
           </Link>
           <span className="text-text-muted text-[11px] uppercase tracking-[0.3em] font-bold">Russian Roulette</span>
-          <div className="ml-auto text-text-gold text-xs font-bold">{balance} cr</div>
+          <div className="ml-auto flex items-center gap-2">
+            {isLoggedIn && (
+              <span className="text-green-400 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border border-green-400/30 bg-green-400/10">
+                live
+              </span>
+            )}
+            <span className="text-text-gold text-xs font-bold">{balance} cr</span>
+          </div>
         </div>
 
         {/* Revolver scene */}

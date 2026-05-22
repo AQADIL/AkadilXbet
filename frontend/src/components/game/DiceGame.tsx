@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
+import { authFetch, getUser, WalletDTO } from "@/lib/auth";
+import { useBalance } from "@/hooks/useBalance";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
@@ -12,22 +14,37 @@ type DiceHistoryItem = {
 };
 
 export default function DiceGame() {
+    const localBalance = useBalance();
+    const [backendBalance, setBackendBalance] = useState<number | null>(null);
+    const isLoggedIn = !!getUser();
+    const balance = isLoggedIn ? (backendBalance ?? 0) : localBalance.balance;
+
+    const fetchWallet = useCallback(() => {
+        if (!isLoggedIn) return;
+        authFetch("/api/auth/wallet")
+            .then((r) => r.json())
+            .then((d: WalletDTO) => setBackendBalance(Math.floor(d.balance_cents / 100)))
+            .catch(() => {});
+    }, [isLoggedIn]);
+
+    useEffect(() => { fetchWallet(); }, [fetchWallet]);
+
     const [bet, setBet] = useState(100);
     const [result, setResult] = useState<number | null>(null);
     const [status, setStatus] = useState<"idle" | "rolling" | "won" | "lost">("idle");
     const [history, setHistory] = useState<DiceHistoryItem[]>([]);
 
     const rollDice = async () => {
+        if (bet > balance || bet <= 0) return;
         setStatus("rolling");
 
+        const user = getUser();
         try {
-            const res = await fetch(`${API_BASE_URL}/api/games/dice/play`, {
+            const res = await authFetch(`${API_BASE_URL}/api/games/dice/play`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    user_id: "1",
+                    user_id: user?.userId ?? "1",
                     bet_amount: bet,
                 }),
             });
@@ -37,15 +54,11 @@ export default function DiceGame() {
             setTimeout(() => {
                 setResult(data.dice_value);
                 setStatus(data.result);
-
                 setHistory((prev) => [
-                    {
-                        dice: data.dice_value,
-                        result: data.result,
-                        payout: data.payout,
-                    },
+                    { dice: data.dice_value, result: data.result, payout: data.payout },
                     ...prev.slice(0, 4),
                 ]);
+                fetchWallet();
             }, 700);
         } catch (error) {
             console.error(error);
@@ -63,9 +76,12 @@ export default function DiceGame() {
                     <h2 className="text-3xl font-black text-white">Higher Lower</h2>
                 </div>
 
-                <div className="rounded-2xl bg-black/40 px-4 py-2 text-right">
-                    <p className="text-xs text-white/40">Multiplier</p>
-                    <p className="text-xl font-bold text-green-400">x2.00</p>
+                <div className="flex flex-col items-end gap-1">
+                    <div className="rounded-2xl bg-black/40 px-4 py-2 text-right">
+                        <p className="text-xs text-white/40">Multiplier</p>
+                        <p className="text-xl font-bold text-green-400">x2.00</p>
+                    </div>
+                    <p className="text-xs font-bold text-yellow-400">{balance} cr</p>
                 </div>
             </div>
 
