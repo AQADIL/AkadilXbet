@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plane, TrendingUp } from "lucide-react";
 import AviatorCanvas from "@/components/aviator/AviatorCanvas";
@@ -26,6 +26,16 @@ export default function AviatorGame() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // 60 FPS Client-Side Prediction State and Refs
+  const [displayMult, setDisplayMult] = useState(1.0);
+  const [activeBetCents, setActiveBetCents] = useState<number | null>(null);
+
+  const displayMultRef = useRef(1.0);
+  const statusRef = useRef("waiting");
+  const serverMultRef = useRef(1.0);
+  const flightStartRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
+
   const refresh = useCallback(async () => {
     try {
       const [r, b] = await Promise.all([getAviatorRound(), getAviatorBalance()]);
@@ -46,6 +56,80 @@ export default function AviatorGame() {
     };
   }, [refresh]);
 
+  // Synchronize server updates to refs, manage status transitions and resets
+  useEffect(() => {
+    const status = round?.status ?? "waiting";
+    const serverMult = round?.current_multiplier ?? 1.0;
+
+    statusRef.current = status;
+    serverMultRef.current = serverMult;
+
+    if (status === "waiting") {
+      setDisplayMult(1.0);
+      displayMultRef.current = 1.0;
+      flightStartRef.current = null;
+    } else if (status === "crashed") {
+      setDisplayMult(serverMult);
+      displayMultRef.current = serverMult;
+      flightStartRef.current = null;
+      setBetId(null);
+      setActiveBetCents(null);
+    }
+  }, [round?.status, round?.current_multiplier]);
+
+  // Persistent 60 FPS requestAnimationFrame loop utilizing PLL Clock Sync
+  useEffect(() => {
+    let active = true;
+
+    const tick = () => {
+      if (!active) return;
+
+      const currentStatus = statusRef.current;
+      const serverMult = serverMultRef.current;
+
+      if (currentStatus === "flying") {
+        if (flightStartRef.current === null) {
+          // Initialize flightStart based on server multiplier
+          const elapsedSec = Math.log(Math.max(1.0, serverMult)) / 0.06;
+          flightStartRef.current = Date.now() - elapsedSec * 1000;
+        } else {
+          // Phase-Locked Loop (PLL): compute implied elapsed flight start time
+          const impliedElapsedSec = Math.log(Math.max(1.0, serverMult)) / 0.06;
+          const targetStart = Date.now() - impliedElapsedSec * 1000;
+
+          // Gently pull current flight start reference towards target start time to correct latency lag
+          flightStartRef.current += (targetStart - flightStartRef.current) * 0.1;
+        }
+
+        // Calculate continuous predicted multiplier
+        const elapsedMs = Date.now() - flightStartRef.current;
+        const predicted = Math.exp(0.06 * (elapsedMs / 1000));
+
+        // Guarantee strictly increasing display multiplier
+        const finalMult = Math.max(displayMultRef.current, predicted);
+        displayMultRef.current = finalMult;
+        setDisplayMult(finalMult);
+      } else if (currentStatus === "crashed") {
+        setDisplayMult(serverMult);
+        displayMultRef.current = serverMult;
+        flightStartRef.current = null;
+      } else { // "waiting"
+        setDisplayMult(1.0);
+        displayMultRef.current = 1.0;
+        flightStartRef.current = null;
+      }
+
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+
+    return () => {
+      active = false;
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
+
   const handleBet = async (amount: number) => {
     setLoading(true);
     setMessage("");
@@ -53,6 +137,7 @@ export default function AviatorGame() {
       const res = await placeAviatorBet(amount);
       setBetId(res.bet_id);
       setBalance(res.balance_cents);
+      setActiveBetCents(amount); // track active bet
       const mult = parseFloat(autoMult);
       if (mult >= 1.01) {
         await setAviatorAutoCashout(res.bet_id, mult);
@@ -73,6 +158,7 @@ export default function AviatorGame() {
       setBalance(res.balance_cents);
       setMessage(`Cashed out ${res.multiplier.toFixed(2)}x — +${formatCredits(res.payout_cents)}`);
       setBetId(null);
+      setActiveBetCents(null);
     } catch (e) {
       setMessage(e instanceof Error ? e.message : "Cash out failed");
     } finally {
@@ -80,13 +166,12 @@ export default function AviatorGame() {
     }
   };
 
-  const mult = round?.current_multiplier ?? 1;
   const canBet = round?.status === "waiting";
   const canCashOut = round?.status === "flying" && betId;
 
   return (
     <div className="relative w-full h-[calc(100svh-4rem)] overflow-hidden bg-surface-base">
-      <AviatorCanvas multiplier={mult} status={round?.status ?? "waiting"} />
+      <AviatorCanvas multiplier={displayMult} status={round?.status ?? "waiting"} />
 
       <div
         className="absolute inset-0 pointer-events-none"
@@ -113,7 +198,7 @@ export default function AviatorGame() {
 
         <div className="flex-1 flex flex-col items-center justify-center gap-2">
           <motion.div
-            key={mult}
+            key={round?.status ?? "waiting"}
             initial={{ scale: 0.92, opacity: 0.6 }}
             animate={{ scale: 1, opacity: 1 }}
             className="text-center"
@@ -126,7 +211,7 @@ export default function AviatorGame() {
                 round?.status === "crashed" ? "text-red-400" : "text-brand-glow glow-green"
               }`}
             >
-              {mult.toFixed(2)}x
+              {displayMult.toFixed(2)}x
             </p>
           </motion.div>
         </div>
@@ -202,10 +287,15 @@ export default function AviatorGame() {
             onClick={handleCashOut}
             className="h-14 rounded-xl bg-brand-primary text-surface-base font-black text-brutalist text-sm tracking-widest uppercase disabled:opacity-40 shadow-lg shadow-brand-primary/20"
           >
-            Cash Out
+            {canCashOut
+              ? activeBetCents
+                ? `Cash Out x${displayMult.toFixed(2)} (${formatCredits(activeBetCents * displayMult)})`
+                : `Cash Out x${displayMult.toFixed(2)}`
+              : "Cash Out"}
           </motion.button>
         </div>
       </div>
     </div>
   );
 }
+

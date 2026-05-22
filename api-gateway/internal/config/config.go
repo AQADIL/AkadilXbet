@@ -15,6 +15,8 @@ type Config struct {
 	AuthServiceHTTPAddr string
 	AviatorHTTPURL      string
 	BalloonHTTPURL      string
+	ScratchServiceAddr  string
+	SlotsServiceAddr    string
 }
 
 func Load() *Config {
@@ -29,6 +31,8 @@ func Load() *Config {
 		AuthServiceHTTPAddr: getEnv("AUTH_SERVICE_HOST", "localhost") + ":" + getEnv("AUTH_SERVICE_HTTP_PORT", "8081"),
 		AviatorHTTPURL:      getEnv("AVIATOR_SERVICE_HTTP_URL", "http://localhost:8054"),
 		BalloonHTTPURL:      getEnv("BALLOON_SERVICE_HTTP_URL", "http://localhost:8055"),
+		ScratchServiceAddr:  getEnv("SCRATCH_SERVICE_HOST", "localhost") + ":" + getEnv("SCRATCH_SERVICE_PORT", "8082"),
+		SlotsServiceAddr:    getEnv("SLOTS_SERVICE_HOST", "localhost") + ":" + getEnv("SLOTS_SERVICE_PORT", "8083"),
 	}
 }
 

@@ -1,71 +1,145 @@
+"use client";
+
 import Link from "next/link";
 import MobileShell from "@/components/layout/MobileShell";
-import { Plane, Circle, Bomb, Dices } from "lucide-react";
 
 const GAMES = [
   {
     href: "/fast-games/aviator",
-    title: "Aviator",
-    desc: "Rising multiplier · cash out before crash",
-    icon: Plane,
-    accent: "from-brand-primary/20 to-transparent",
+    name: "Aviator",
+    tagline: "Fly high, cash out before the crash",
+    badge: "HOT",
+    badgeColor: "text-red-400 border-red-400/40 bg-red-400/10",
+    icon: (
+      <svg viewBox="0 0 48 48" fill="none" className="w-10 h-10">
+        <path d="M6 28L22 8l4 8 12-4-14 18-4-8-14 6z" fill="#4ade80" opacity="0.9"/>
+        <path d="M28 32l8-4-2 10-6-6z" fill="#4ade80" opacity="0.5"/>
+        <circle cx="38" cy="38" r="2" fill="#4ade80" opacity="0.4"/>
+        <circle cx="42" cy="36" r="1.5" fill="#4ade80" opacity="0.3"/>
+        <circle cx="44" cy="40" r="1" fill="#4ade80" opacity="0.2"/>
+      </svg>
+    ),
+    gradient: "from-green-950/80 to-surface-raised/80",
+    glow: "shadow-green-900/40",
   },
   {
     href: "/fast-games/balloon",
-    title: "Balloon",
-    desc: "Hold to pump · release to win",
-    icon: Circle,
-    accent: "from-brand-glow/15 to-transparent",
+    name: "Balloon",
+    tagline: "Inflate the risk, release the reward",
+    badge: "NEW",
+    badgeColor: "text-brand-glow border-brand-glow/40 bg-brand-glow/10",
+    icon: (
+      <svg viewBox="0 0 48 48" fill="none" className="w-10 h-10">
+        <ellipse cx="24" cy="20" rx="13" ry="15" fill="#4ade80" opacity="0.85"/>
+        <ellipse cx="20" cy="14" rx="4" ry="5" fill="white" opacity="0.25"/>
+        <path d="M21 35 Q24 40 27 35" stroke="#4ade80" strokeWidth="1.5" fill="none" opacity="0.7"/>
+        <rect x="22" y="35" width="4" height="2" rx="1" fill="#4ade80" opacity="0.5"/>
+        <path d="M24 37 L22 44 M24 37 L26 44" stroke="#22c55e" strokeWidth="1" opacity="0.5"/>
+      </svg>
+    ),
+    gradient: "from-emerald-950/80 to-surface-raised/80",
+    glow: "shadow-emerald-900/40",
+  },
+  {
+    href: "/fast-games/scratch",
+    name: "Scratch Loto",
+    tagline: "Three matching symbols — instant win",
+    badge: "LUCK",
+    badgeColor: "text-text-gold border-text-gold/40 bg-text-gold/10",
+    icon: (
+      <svg viewBox="0 0 48 48" fill="none" className="w-10 h-10">
+        <rect x="6" y="8" width="36" height="32" rx="5" fill="#1a3d22" stroke="#4ade80" strokeWidth="1.5" opacity="0.85"/>
+        <rect x="10" y="13" width="10" height="10" rx="2" fill="#4ade80" opacity="0.3"/>
+        <rect x="23" y="13" width="10" height="10" rx="2" fill="#4ade80" opacity="0.3"/>
+        <rect x="10" y="27" width="10" height="10" rx="2" fill="#4ade80" opacity="0.3"/>
+        <rect x="23" y="27" width="10" height="10" rx="2" fill="#fbbf24" opacity="0.5"/>
+        <circle cx="39" cy="18" r="5" fill="#fbbf24" opacity="0.9"/>
+        <path d="M36.5 18 Q39 15.5 41.5 18" stroke="white" strokeWidth="1.5" fill="none"/>
+      </svg>
+    ),
+    gradient: "from-yellow-950/60 to-surface-raised/80",
+    glow: "shadow-yellow-900/30",
   },
   {
     href: "/fast-games/mines",
-    title: "Mines",
-    desc: "Open safe cells · cash out before mine",
-    icon: Bomb,
-    accent: "from-red-500/20 to-transparent",
+    name: "Mines",
+    tagline: "Open safe cells and cashout before hitting a mine",
+    badge: "RISK",
+    badgeColor: "text-orange-400 border-orange-400/40 bg-orange-400/10",
+    icon: (
+      <svg viewBox="0 0 48 48" fill="none" className="w-10 h-10">
+        <circle cx="24" cy="24" r="14" fill="#1a3d22" stroke="#4ade80" strokeWidth="1.5" opacity="0.8"/>
+        <circle cx="24" cy="24" r="7" fill="#4ade80" opacity="0.7"/>
+        <line x1="24" y1="6" x2="24" y2="10" stroke="#4ade80" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="24" y1="38" x2="24" y2="42" stroke="#4ade80" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="6" y1="24" x2="10" y2="24" stroke="#4ade80" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="38" y1="24" x2="42" y2="24" stroke="#4ade80" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="11" y1="11" x2="14" y2="14" stroke="#4ade80" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="34" y1="34" x2="37" y2="37" stroke="#4ade80" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="37" y1="11" x2="34" y2="14" stroke="#4ade80" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="14" y1="34" x2="11" y2="37" stroke="#4ade80" strokeWidth="2" strokeLinecap="round"/>
+      </svg>
+    ),
+    gradient: "from-orange-950/60 to-surface-raised/80",
+    glow: "shadow-orange-900/30",
   },
   {
     href: "/fast-games/dice",
-    title: "Higher Lower",
-    desc: "Predict high or low · x2 payout",
-    icon: Dices,
-    accent: "from-blue-500/20 to-transparent",
+    name: "Higher Lower",
+    tagline: "Predict high or low — higher roll wins x2 payout",
+    badge: "x2",
+    badgeColor: "text-blue-400 border-blue-400/40 bg-blue-400/10",
+    icon: (
+      <svg viewBox="0 0 48 48" fill="none" className="w-10 h-10">
+        <rect x="6" y="6" width="36" height="36" rx="7" fill="#1a2a3d" stroke="#4ade80" strokeWidth="1.5" opacity="0.8"/>
+        <circle cx="15" cy="15" r="3" fill="#4ade80" opacity="0.9"/>
+        <circle cx="33" cy="15" r="3" fill="#4ade80" opacity="0.9"/>
+        <circle cx="15" cy="33" r="3" fill="#4ade80" opacity="0.9"/>
+        <circle cx="33" cy="33" r="3" fill="#4ade80" opacity="0.9"/>
+        <circle cx="24" cy="24" r="3" fill="#4ade80" opacity="0.9"/>
+      </svg>
+    ),
+    gradient: "from-blue-950/60 to-surface-raised/80",
+    glow: "shadow-blue-900/30",
   },
 ] as const;
 
 export default function FastGamesPage() {
   return (
     <MobileShell>
-      <section className="px-4 pt-8 pb-6">
-        <h1 className="text-brutalist text-3xl text-brand-glow glow-green mb-1">Fast Games</h1>
-        <p className="text-text-muted text-sm mb-8">Instant rounds · server-side odds</p>
+      <div className="px-4 pt-8 pb-4">
+        <h1 className="text-brutalist text-2xl text-text-primary glow-green mb-1">Fast Games</h1>
+        <p className="text-text-muted text-xs uppercase tracking-widest">Quick rounds · Instant payouts</p>
+      </div>
 
-        <div className="flex flex-col gap-4">
-          {GAMES.map(({ href, title, desc, icon: Icon, accent }) => (
-            <Link
-              key={href}
-              href={href}
-              className="group relative overflow-hidden rounded-2xl glass p-5 transition-all duration-200 active:scale-[0.98] hover:border-brand-glow/30"
-            >
-              <div
-                className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${accent} opacity-80`}
-              />
-              <div className="relative flex items-center gap-4">
-                <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-brand-primary/15 border border-glass">
-                  <Icon size={28} className="text-brand-glow" strokeWidth={1.75} />
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-brutalist text-xl text-text-primary">{title}</p>
-                  <p className="text-text-muted text-xs mt-1">{desc}</p>
-                </div>
-                <span className="text-brand-glow text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
-                  Play
-                </span>
+      <div className="flex flex-col gap-4 px-4 pb-6">
+        {GAMES.map((game) => (
+          <Link
+            key={game.href}
+            href={game.href}
+            className={`group relative overflow-hidden rounded-2xl glass bg-gradient-to-br ${game.gradient} border border-green-800/30 shadow-xl ${game.glow} active:scale-[0.98] transition-transform duration-150`}
+          >
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/[0.02]" />
+            <div className="relative flex items-center gap-4 p-5">
+              <div className="shrink-0 w-16 h-16 rounded-xl glass flex items-center justify-center">
+                {game.icon}
               </div>
-            </Link>
-          ))}
-        </div>
-      </section>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-text-primary font-black text-lg tracking-tight">{game.name}</span>
+                  <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border ${game.badgeColor}`}>
+                    {game.badge}
+                  </span>
+                </div>
+                <p className="text-text-muted text-xs leading-snug">{game.tagline}</p>
+              </div>
+              <svg className="w-5 h-5 text-text-muted group-hover:text-text-secondary transition-colors shrink-0" viewBox="0 0 20 20" fill="none">
+                <path d="M7 4l6 6-6 6" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round"/>
+              </svg>
+            </div>
+          </Link>
+        ))}
+      </div>
     </MobileShell>
   );
 }

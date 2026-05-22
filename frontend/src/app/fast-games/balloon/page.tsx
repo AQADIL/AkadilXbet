@@ -1,3 +1,5 @@
+"use client";
+
 import MobileShell from "@/components/layout/MobileShell";
 import BalloonGame from "@/components/balloon/BalloonGame";
 

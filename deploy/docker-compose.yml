@@ -216,6 +216,50 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  scratch-service:
+    build:
+      context: ../services/scratch-service
+      dockerfile: Dockerfile
+    container_name: akadilxbet_scratch
+    environment:
+      SCRATCH_SERVICE_PORT: ${SCRATCH_SERVICE_PORT}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      JWT_SECRET: ${JWT_SECRET}
+    ports:
+      - "${SCRATCH_SERVICE_PORT}:${SCRATCH_SERVICE_PORT}"
+    networks:
+      - akadilxbet_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  slots-service:
+    build:
+      context: ../services/slots-service
+      dockerfile: Dockerfile
+    container_name: akadilxbet_slots
+    environment:
+      SLOTS_SERVICE_PORT: ${SLOTS_SERVICE_PORT}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      JWT_SECRET: ${JWT_SECRET}
+    ports:
+      - "${SLOTS_SERVICE_PORT}:${SLOTS_SERVICE_PORT}"
+    networks:
+      - akadilxbet_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
   api-gateway:
     build:
       context: ..
@@ -229,6 +273,10 @@ services:
       WALLET_SERVICE_ADDR: wallet-service:${WALLET_SERVICE_GRPC_PORT}
       AVIATOR_SERVICE_HTTP_URL: http://aviator-service:${AVIATOR_SERVICE_HTTP_PORT}
       BALLOON_SERVICE_HTTP_URL: http://balloon-service:${BALLOON_SERVICE_HTTP_PORT}
+      SCRATCH_SERVICE_HOST: scratch-service
+      SCRATCH_SERVICE_PORT: ${SCRATCH_SERVICE_PORT}
+      SLOTS_SERVICE_HOST: slots-service
+      SLOTS_SERVICE_PORT: ${SLOTS_SERVICE_PORT}
       NATS_URL: nats://nats:4222
       JWT_SECRET: ${JWT_SECRET}
       JWT_SECRET_FILE: /run/secrets/jwt_secret
@@ -243,6 +291,8 @@ services:
       - wallet-service
       - aviator-service
       - balloon-service
+      - scratch-service
+      - slots-service
     restart: unless-stopped
 
   frontend:

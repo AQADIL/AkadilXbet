@@ -1,3 +1,5 @@
+"use client";
+
 import MobileShell from "@/components/layout/MobileShell";
 import AviatorGame from "@/components/aviator/AviatorGame";
 

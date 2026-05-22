@@ -32,3 +32,5 @@ Thumbs.db
 *.key
 *.crt
 akadilxbet-protos/
+
+settings.local.json
