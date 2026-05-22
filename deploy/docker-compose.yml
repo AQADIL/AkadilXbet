@@ -177,10 +177,10 @@ services:
       args:
         NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
         NEXT_PUBLIC_APP_ENV: ${NEXT_PUBLIC_APP_ENV}
-        API_BASE_URL: http://api-gateway:8082
+        API_BASE_URL: http://api-gateway:8080
     container_name: akadilxbet_frontend
     environment:
-      API_BASE_URL: http://api-gateway:8082
+      API_BASE_URL: http://api-gateway:8080
     ports:
       - "${FRONTEND_PORT}:3000"
     networks:
