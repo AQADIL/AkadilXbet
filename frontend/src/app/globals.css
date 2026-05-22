@@ -90,6 +90,14 @@ body {
   .border-glass {
     border-color: rgba(74, 222, 128, 0.18);
   }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
 }
 
 ::-webkit-scrollbar {
