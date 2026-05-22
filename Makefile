@@ -1,5 +1,5 @@
-.PHONY: up down logs infra-up infra-down infra-logs migrate-auth migrate-wallet migrate-all \
-        build-gateway build-auth build-wallet build-all test lint tidy
+.PHONY: up down logs infra-up infra-down infra-logs migrate-auth migrate-wallet migrate-aviator migrate-balloon migrate-all \
+        build-gateway build-auth build-wallet build-aviator build-balloon build-all test lint tidy
 
 COMPOSE_FILE=deploy/docker-compose.yml
 PROTO_DIR=proto
@@ -34,7 +34,13 @@ migrate-auth:
 migrate-wallet:
 	migrate -path services/wallet-service/migrations -database "$(DB_URL)" up
 
-migrate-all: migrate-auth migrate-wallet
+migrate-aviator:
+	migrate -path services/aviator-service/migrations -database "$(DB_URL)" up
+
+migrate-balloon:
+	migrate -path services/balloon-service/migrations -database "$(DB_URL)" up
+
+migrate-all: migrate-auth migrate-wallet migrate-aviator migrate-balloon
 
 proto-gen:
 	find $(PROTO_DIR) -name "*.proto" -exec protoc \
@@ -53,12 +59,21 @@ build-auth:
 build-wallet:
 	cd services/wallet-service && go build -o ../../bin/wallet-service ./...
 
-build-all: build-gateway build-auth build-wallet
+build-aviator:
+	cd services/aviator-service && go build -o ../../bin/aviator-service ./...
+
+build-balloon:
+	cd services/balloon-service && go build -o ../../bin/balloon-service ./...
+
+build-all: build-gateway build-auth build-wallet build-aviator build-balloon
 
 test:
 	cd api-gateway && go test ./... -v -race -count=1
 	cd services/auth-service && go test ./... -v -race -count=1
 	cd services/wallet-service && go test ./... -v -race -count=1
+	cd pkg/bankrtp && go test ./... -v -count=1
+	cd services/aviator-service && go test ./... -v -count=1
+	cd services/balloon-service && go test ./... -v -count=1
 
 lint:
 	cd api-gateway && go vet ./...

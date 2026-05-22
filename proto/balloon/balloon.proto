@@ -1,0 +1,116 @@
+syntax = "proto3";
+
+package balloon;
+
+option go_package = "github.com/akadilxbet/balloon-service/internal/pb";
+
+service BalloonService {
+  rpc StartSession (StartSessionRequest) returns (SessionResponse);
+  rpc PlaceBet (PlaceBetRequest) returns (BetResponse);
+  rpc Pump (PumpRequest) returns (PumpResponse);
+  rpc Release (ReleaseRequest) returns (ReleaseResponse);
+  rpc GetActiveSession (GetActiveSessionRequest) returns (SessionResponse);
+  rpc AbortSession (AbortSessionRequest) returns (SessionResponse);
+  rpc GetSessionResult (GetSessionResultRequest) returns (SessionResultResponse);
+  rpc GetHistory (GetHistoryRequest) returns (HistoryResponse);
+  rpc GetConfig (GetConfigRequest) returns (ConfigResponse);
+  rpc ValidatePumpRate (ValidatePumpRateRequest) returns (ValidatePumpRateResponse);
+  rpc GetPlayerStats (GetPlayerStatsRequest) returns (PlayerStatsResponse);
+  rpc StreamPumpTicks (StreamPumpRequest) returns (stream PumpTick);
+}
+
+message StartSessionRequest { string user_id = 1; }
+message GetActiveSessionRequest { string user_id = 1; }
+message AbortSessionRequest { string user_id = 1; }
+message GetSessionResultRequest { string session_id = 1; }
+message GetHistoryRequest { string user_id = 1; int32 limit = 2; }
+message GetConfigRequest {}
+message StreamPumpRequest { string user_id = 1; }
+message GetPlayerStatsRequest { string user_id = 1; }
+
+message PlaceBetRequest {
+  string user_id = 1;
+  int64  amount_cents = 2;
+}
+
+message PumpRequest { string user_id = 1; }
+message ReleaseRequest { string user_id = 1; }
+
+message ValidatePumpRateRequest {
+  string user_id = 1;
+  int64  interval_ms = 2;
+}
+
+message SessionResponse {
+  string session_id = 1;
+  string status = 2;
+  double current_multiplier = 3;
+  int64  bet_amount_cents = 4;
+  int64  started_at = 5;
+}
+
+message PumpResponse {
+  string session_id = 1;
+  double current_multiplier = 2;
+  bool   popped = 3;
+  string status = 4;
+}
+
+message PumpTick {
+  string session_id = 1;
+  double current_multiplier = 2;
+  bool   popped = 3;
+  int64  server_time = 4;
+}
+
+message BetResponse {
+  string session_id = 1;
+  string user_id = 2;
+  int64  amount_cents = 3;
+  int64  balance_cents = 4;
+  string status = 5;
+}
+
+message ReleaseResponse {
+  string session_id = 1;
+  double multiplier = 2;
+  int64  payout_cents = 3;
+  int64  balance_cents = 4;
+  bool   popped = 5;
+}
+
+message SessionResultResponse {
+  string session_id = 1;
+  string status = 2;
+  double multiplier = 3;
+  int64  payout_cents = 4;
+  bool   won = 5;
+}
+
+message HistoryEntry {
+  string session_id = 1;
+  string status = 2;
+  double multiplier = 3;
+  int64  payout_cents = 4;
+  int64  created_at = 5;
+}
+
+message HistoryResponse { repeated HistoryEntry entries = 1; }
+
+message ConfigResponse {
+  int64  min_bet_cents = 1;
+  int64  max_bet_cents = 2;
+  double pump_rate = 3;
+}
+
+message ValidatePumpRateResponse {
+  bool allowed = 1;
+  string reason = 2;
+}
+
+message PlayerStatsResponse {
+  int32 total_sessions = 1;
+  int32 total_wins = 2;
+  int64 total_wagered_cents = 3;
+  int64 total_won_cents = 4;
+}

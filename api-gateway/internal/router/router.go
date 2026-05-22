@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/akadilxbet/api-gateway/internal/config"
+	"github.com/akadilxbet/api-gateway/internal/handler"
 	"github.com/akadilxbet/api-gateway/internal/middleware"
 )
 
@@ -13,6 +14,11 @@ func New(cfg *config.Config) http.Handler {
 
 	mux.HandleFunc("GET /health", healthHandler)
 	mux.HandleFunc("GET /ready", readyHandler)
+
+	aviatorProxy := handler.NewReverseProxy(cfg.AviatorHTTPURL)
+	balloonProxy := handler.NewReverseProxy(cfg.BalloonHTTPURL)
+	mux.Handle("/api/v1/aviator/", aviatorProxy)
+	mux.Handle("/api/v1/balloon/", balloonProxy)
 
 	return middleware.Chain(mux,
 		middleware.RequestID,

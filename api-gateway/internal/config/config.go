@@ -5,13 +5,15 @@ import (
 )
 
 type Config struct {
-	Port            string
-	NatsURL         string
-	PostgresDSN     string
-	RedisAddr       string
-	RedisPassword   string
-	JWTSecret       string
-	AuthServiceAddr string
+	Port             string
+	NatsURL          string
+	PostgresDSN      string
+	RedisAddr        string
+	RedisPassword    string
+	JWTSecret        string
+	AuthServiceAddr  string
+	AviatorHTTPURL   string
+	BalloonHTTPURL   string
 }
 
 func Load() *Config {
@@ -23,6 +25,8 @@ func Load() *Config {
 		RedisPassword:   getEnv("REDIS_PASSWORD", ""),
 		JWTSecret:       mustGetEnv("JWT_SECRET"),
 		AuthServiceAddr: getEnv("AUTH_SERVICE_HOST", "localhost") + ":" + getEnv("AUTH_SERVICE_GRPC_PORT", "50051"),
+		AviatorHTTPURL:  getEnv("AVIATOR_SERVICE_HTTP_URL", "http://localhost:8054"),
+		BalloonHTTPURL:  getEnv("BALLOON_SERVICE_HTTP_URL", "http://localhost:8055"),
 	}
 }
 
