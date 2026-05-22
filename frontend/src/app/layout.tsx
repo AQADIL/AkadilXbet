@@ -49,6 +49,10 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full`}
     >
+      <head>
+        <link rel="icon" href="/akadilxbet-logo.png" />
+        <link rel="apple-touch-icon" href="/akadilxbet-logo.png" />
+      </head>
       <body className="min-h-full bg-[#08140C] text-[#f0fdf4] antialiased">
         <AuthProvider>{children}</AuthProvider>
       </body>
