@@ -3,6 +3,7 @@ module github.com/akadilxbet/auth-service
 go 1.23
 
 require (
+	github.com/AQADIL/akadilxbet-protos v0.0.0-00010101000000-000000000000
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/nats-io/nats.go v1.38.0
@@ -10,6 +11,8 @@ require (
 	golang.org/x/crypto v0.32.0
 	google.golang.org/grpc v1.71.0
 )
+
+replace github.com/AQADIL/akadilxbet-protos => ../../akadilxbet-protos
 
 require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect

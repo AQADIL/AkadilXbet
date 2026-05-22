@@ -48,6 +48,10 @@ func (uc *AuthUseCase) Register(ctx context.Context, email, password string) (st
 		return "", "", err
 	}
 
+	if err := uc.users.EnsureWallet(ctx, user.ID, 100000); err != nil {
+		return "", "", err
+	}
+
 	token, err := uc.mintToken(user.ID)
 	if err != nil {
 		return "", "", err
@@ -93,6 +97,42 @@ func (uc *AuthUseCase) GetUserProfile(ctx context.Context, userID string) (*doma
 	_ = uc.cache.SetProfile(ctx, user)
 
 	return user, nil
+}
+
+func (uc *AuthUseCase) UpdateUsername(ctx context.Context, userID, username string) (*domain.User, error) {
+	user, err := uc.users.UpdateUsername(ctx, userID, username)
+	if err != nil {
+		return nil, err
+	}
+	_ = uc.cache.SetProfile(ctx, user)
+	return user, nil
+}
+
+func (uc *AuthUseCase) GetWallet(ctx context.Context, userID string) (*domain.Wallet, error) {
+	return uc.users.GetWallet(ctx, userID)
+}
+
+func (uc *AuthUseCase) ListWalletTransactions(ctx context.Context, userID string, limit int) ([]domain.WalletTransaction, error) {
+	return uc.users.ListWalletTransactions(ctx, userID, limit)
+}
+
+func (uc *AuthUseCase) VerifyToken(token string) (string, error) {
+	if token == "" {
+		return "", domain.ErrUnauthorized{}
+	}
+
+	claims := &jwt.RegisteredClaims{}
+	parsed, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+		if token.Method != jwt.SigningMethodHS256 {
+			return nil, domain.ErrUnauthorized{}
+		}
+		return uc.jwtSecret, nil
+	})
+	if err != nil || !parsed.Valid || claims.Subject == "" {
+		return "", domain.ErrUnauthorized{}
+	}
+
+	return claims.Subject, nil
 }
 
 func (uc *AuthUseCase) mintToken(userID string) (string, error) {

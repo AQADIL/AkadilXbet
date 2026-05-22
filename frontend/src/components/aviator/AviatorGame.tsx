@@ -22,6 +22,7 @@ export default function AviatorGame() {
   const [balance, setBalance] = useState(100_000);
   const [betId, setBetId] = useState<string | null>(null);
   const [autoMult, setAutoMult] = useState("2.00");
+  const [customBet, setCustomBet] = useState("1.00");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -170,6 +171,29 @@ export default function AviatorGame() {
                 {amt / 100}
               </motion.button>
             ))}
+          </div>
+
+          <div className="flex gap-2">
+            <input
+              type="number"
+              step="0.01"
+              min="0.01"
+              value={customBet}
+              onChange={(e) => setCustomBet(e.target.value)}
+              className="flex-1 h-11 rounded-xl glass px-3 text-sm font-bold text-brand-glow outline-none"
+              placeholder="Amount"
+            />
+            <motion.button
+              whileTap={{ scale: 0.96 }}
+              disabled={!canBet || loading}
+              onClick={() => {
+                const val = parseFloat(customBet || "0") || 0;
+                handleBet(Math.max(1, Math.round(val * 100)));
+              }}
+              className="h-11 rounded-xl bg-brand-primary text-surface-base font-black text-sm tracking-widest uppercase disabled:opacity-40"
+            >
+              Bet
+            </motion.button>
           </div>
 
           <motion.button

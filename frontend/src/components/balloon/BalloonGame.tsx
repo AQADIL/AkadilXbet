@@ -19,6 +19,7 @@ export default function BalloonGame() {
   const [balance, setBalance] = useState(100_000);
   const [holding, setHolding] = useState(false);
   const [message, setMessage] = useState("");
+  const [customBet, setCustomBet] = useState("5.00");
   const pumpRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const refresh = useCallback(async () => {
@@ -35,33 +36,37 @@ export default function BalloonGame() {
     refresh();
   }, [refresh]);
 
-  const startPump = useCallback(async () => {
-    if (session?.status !== "active") {
-      setMessage("");
-      try {
-        const res = await placeBalloonBet(BET_AMOUNT);
-        setSession(res.session);
-        setBalance(res.balance_cents);
-      } catch (e) {
-        setMessage(e instanceof Error ? e.message : "Start failed");
-        return;
-      }
-    }
-    setHolding(true);
-    pumpRef.current = setInterval(async () => {
-      try {
-        const res = await pumpBalloon();
-        setSession(res.session);
-        if (res.popped) {
-          setHolding(false);
-          if (pumpRef.current) clearInterval(pumpRef.current);
-          setMessage("Popped! You held too long.");
+  const startPump = useCallback(
+    async (betAmountCents?: number) => {
+      if (session?.status !== "active") {
+        setMessage("");
+        try {
+          const amount = betAmountCents ?? BET_AMOUNT;
+          const res = await placeBalloonBet(amount);
+          setSession(res.session);
+          setBalance(res.balance_cents);
+        } catch (e) {
+          setMessage(e instanceof Error ? e.message : "Start failed");
+          return;
         }
-      } catch {
-        /* ignore tick errors */
       }
-    }, 150);
-  }, [session?.status]);
+      setHolding(true);
+      pumpRef.current = setInterval(async () => {
+        try {
+          const res = await pumpBalloon();
+          setSession(res.session);
+          if (res.popped) {
+            setHolding(false);
+            if (pumpRef.current) clearInterval(pumpRef.current);
+            setMessage("Popped! You held too long.");
+          }
+        } catch {
+          /* ignore tick errors */
+        }
+      }, 150);
+    },
+    [session?.status]
+  );
 
   const stopPump = useCallback(async () => {
     setHolding(false);
@@ -142,8 +147,33 @@ export default function BalloonGame() {
           )}
         </AnimatePresence>
 
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            min="0.01"
+            step="0.01"
+            value={customBet}
+            onChange={(e) => setCustomBet(e.target.value)}
+            className="flex-1 glass px-3 py-2 rounded-lg text-sm text-text-primary"
+            placeholder="Amount"
+          />
+          <button
+            onClick={() => {
+              const val = Math.max(0.01, parseFloat(customBet || "0")) || 0.01;
+              const cents = Math.round(val * 100);
+              startPump(cents);
+            }}
+            className="h-10 px-4 rounded-lg bg-brand-glow text-surface-base font-semibold"
+          >
+            Bet
+          </button>
+        </div>
+
         <motion.button
-          onPointerDown={startPump}
+          onPointerDown={() => {
+            const val = Math.max(0.01, parseFloat(customBet || "0")) || 0.01;
+            startPump(Math.round(val * 100));
+          }}
           onPointerUp={stopPump}
           onPointerLeave={() => holding && stopPump()}
           whileTap={{ scale: 0.96 }}

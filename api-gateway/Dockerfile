@@ -1,8 +1,9 @@
 FROM golang:1.25.5-alpine AS builder
-WORKDIR /app
-COPY go.mod go.sum ./
+WORKDIR /src
+COPY akadilxbet-protos ./akadilxbet-protos
+COPY api-gateway ./api-gateway
+WORKDIR /src/api-gateway
 RUN go mod download
-COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o /api-gateway .
 
 FROM alpine:3.20

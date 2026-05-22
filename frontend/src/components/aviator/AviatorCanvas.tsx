@@ -18,6 +18,8 @@ export default function AviatorCanvas({ multiplier, status }: AviatorCanvasProps
     if (!ctx) return;
 
     const resize = () => {
+      // reset transform and size to avoid cumulative scaling
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
       canvas.width = canvas.offsetWidth * devicePixelRatio;
       canvas.height = canvas.offsetHeight * devicePixelRatio;
       ctx.scale(devicePixelRatio, devicePixelRatio);
@@ -25,14 +27,18 @@ export default function AviatorCanvas({ multiplier, status }: AviatorCanvasProps
     resize();
     window.addEventListener("resize", resize);
 
+    let smoothed = multiplier;
     let t = 0;
     const draw = () => {
       const w = canvas.offsetWidth;
       const h = canvas.offsetHeight;
       ctx.clearRect(0, 0, w, h);
 
+      // smooth multiplier towards target for fluid animation
+      smoothed += (multiplier - smoothed) * 0.08;
+
       const crashed = status === "crashed";
-      const progress = Math.min(1, (multiplier - 1) / 8);
+      const progress = Math.min(1, (smoothed - 1) / 8);
       const planeX = 40 + progress * (w - 120);
       const planeY = h * 0.55 - Math.sin(t * 0.03) * 12;
 
